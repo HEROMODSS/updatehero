@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedConfigsIdRouteImport } from './routes/_authenticated/configs.$id'
 import { Route as ApiPublicConfigSlugRouteImport } from './routes/api/public/config.$slug'
 
 const LoginRoute = LoginRouteImport.update({
@@ -34,6 +35,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedConfigsIdRoute = AuthenticatedConfigsIdRouteImport.update({
+  id: '/configs/$id',
+  path: '/configs/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const ApiPublicConfigSlugRoute = ApiPublicConfigSlugRouteImport.update({
   id: '/api/public/config/$slug',
   path: '/api/public/config/$slug',
@@ -44,12 +50,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/configs/$id': typeof AuthenticatedConfigsIdRoute
   '/api/public/config/$slug': typeof ApiPublicConfigSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/configs/$id': typeof AuthenticatedConfigsIdRoute
   '/api/public/config/$slug': typeof ApiPublicConfigSlugRoute
 }
 export interface FileRoutesById {
@@ -58,19 +66,31 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/configs/$id': typeof AuthenticatedConfigsIdRoute
   '/api/public/config/$slug': typeof ApiPublicConfigSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/dashboard' | '/api/public/config/$slug'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/configs/$id'
+    | '/api/public/config/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/dashboard' | '/api/public/config/$slug'
+  to:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/configs/$id'
+    | '/api/public/config/$slug'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/login'
     | '/_authenticated/dashboard'
+    | '/_authenticated/configs/$id'
     | '/api/public/config/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -111,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/configs/$id': {
+      id: '/_authenticated/configs/$id'
+      path: '/configs/$id'
+      fullPath: '/configs/$id'
+      preLoaderRoute: typeof AuthenticatedConfigsIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/public/config/$slug': {
       id: '/api/public/config/$slug'
       path: '/api/public/config/$slug'
@@ -123,10 +150,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedConfigsIdRoute: typeof AuthenticatedConfigsIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedConfigsIdRoute: AuthenticatedConfigsIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
