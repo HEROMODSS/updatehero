@@ -13,7 +13,8 @@ import { Copy } from "lucide-react";
 
 type Config = {
   id: string;
-  slug: string;
+  app_name: string;
+  version: string;
   credit: string;
   enabled: boolean;
   title: string;
@@ -38,6 +39,7 @@ function EditConfig() {
   useEffect(() => {
     setOrigin(window.location.origin);
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   async function load() {
@@ -56,7 +58,18 @@ function EditConfig() {
       return;
     }
     const points = Array.isArray(data.points) ? (data.points as string[]) : [];
-    setC({ ...(data as Config), points });
+    setC({
+      id: data.id,
+      app_name: data.app_name,
+      version: data.version,
+      credit: data.credit,
+      enabled: data.enabled,
+      title: data.title,
+      points,
+      update_link: data.update_link,
+      cancel_text: data.cancel_text,
+      update_text: data.update_text,
+    });
     setPointsText(points.join("\n"));
   }
 
@@ -75,7 +88,8 @@ function EditConfig() {
     const { error } = await supabase
       .from("app_configs")
       .update({
-        slug: c.slug,
+        app_name: c.app_name,
+        version: c.version,
         credit: c.credit,
         enabled: c.enabled,
         title: c.title,
@@ -98,13 +112,16 @@ function EditConfig() {
     return <p className="text-sm text-muted-foreground">Loading…</p>;
   }
 
-  const url = `${origin}/api/public/config/${c.slug}`;
+  const url = `${origin}/api/public/config/${c.app_name}/${c.version}`;
   const previewJson = JSON.stringify(
     {
       credit: c.credit,
       enabled: c.enabled,
       title: c.title,
-      points: pointsText.split("\n").map((s) => s.trim()).filter(Boolean),
+      points: pointsText
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean),
       update_link: c.update_link,
       cancel_text: c.cancel_text,
       update_text: c.update_text,
@@ -117,14 +134,21 @@ function EditConfig() {
     <div className="space-y-6">
       <Toaster />
       <div>
-        <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/dashboard"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
           ← Back
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Edit config</h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+          {c.app_name} <span className="text-muted-foreground">/</span> {c.version}
+        </h1>
       </div>
 
       <Card className="p-4 flex items-center gap-3">
-        <code className="flex-1 text-xs sm:text-sm break-all text-muted-foreground">{url}</code>
+        <code className="flex-1 text-xs sm:text-sm break-all text-muted-foreground">
+          {url}
+        </code>
         <Button
           size="sm"
           variant="outline"
@@ -146,17 +170,34 @@ function EditConfig() {
                 When off, the dialog won't show.
               </p>
             </div>
-            <Switch checked={c.enabled} onCheckedChange={(v) => set("enabled", v)} />
+            <Switch
+              checked={c.enabled}
+              onCheckedChange={(v) => set("enabled", v)}
+            />
           </div>
 
-          <Field label="Slug (URL identifier)">
-            <Input value={c.slug} onChange={(e) => set("slug", e.target.value)} />
-          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="App name">
+              <Input
+                value={c.app_name}
+                onChange={(e) => set("app_name", e.target.value)}
+              />
+            </Field>
+            <Field label="Version">
+              <Input
+                value={c.version}
+                onChange={(e) => set("version", e.target.value)}
+              />
+            </Field>
+          </div>
           <Field label="Title">
             <Input value={c.title} onChange={(e) => set("title", e.target.value)} />
           </Field>
           <Field label="Credit">
-            <Input value={c.credit} onChange={(e) => set("credit", e.target.value)} />
+            <Input
+              value={c.credit}
+              onChange={(e) => set("credit", e.target.value)}
+            />
           </Field>
           <Field label="Points (one per line)">
             <Textarea
@@ -166,14 +207,23 @@ function EditConfig() {
             />
           </Field>
           <Field label="Update link">
-            <Input value={c.update_link} onChange={(e) => set("update_link", e.target.value)} />
+            <Input
+              value={c.update_link}
+              onChange={(e) => set("update_link", e.target.value)}
+            />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Cancel text">
-              <Input value={c.cancel_text} onChange={(e) => set("cancel_text", e.target.value)} />
+              <Input
+                value={c.cancel_text}
+                onChange={(e) => set("cancel_text", e.target.value)}
+              />
             </Field>
             <Field label="Update text">
-              <Input value={c.update_text} onChange={(e) => set("update_text", e.target.value)} />
+              <Input
+                value={c.update_text}
+                onChange={(e) => set("update_text", e.target.value)}
+              />
             </Field>
           </div>
 
@@ -196,7 +246,13 @@ function EditConfig() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
