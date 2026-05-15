@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       app_configs: {
         Row: {
+          app_name: string
           cancel_text: string
           created_at: string
           credit: string
@@ -23,13 +24,14 @@ export type Database = {
           id: string
           owner_id: string
           points: Json
-          slug: string
           title: string
           update_link: string
           update_text: string
           updated_at: string
+          version: string
         }
         Insert: {
+          app_name: string
           cancel_text?: string
           created_at?: string
           credit?: string
@@ -37,13 +39,14 @@ export type Database = {
           id?: string
           owner_id: string
           points?: Json
-          slug: string
           title?: string
           update_link?: string
           update_text?: string
           updated_at?: string
+          version: string
         }
         Update: {
+          app_name?: string
           cancel_text?: string
           created_at?: string
           credit?: string
@@ -51,11 +54,11 @@ export type Database = {
           id?: string
           owner_id?: string
           points?: Json
-          slug?: string
           title?: string
           update_link?: string
           update_text?: string
           updated_at?: string
+          version?: string
         }
         Relationships: []
       }

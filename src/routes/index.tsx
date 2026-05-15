@@ -51,20 +51,21 @@ function Landing() {
       </section>
 
       <section id="how" className="mx-auto max-w-5xl px-6 pb-24 grid md:grid-cols-3 gap-4">
-        <Step n="1" title="Create a config">
-          Pick a slug (e.g. <code className="text-primary">5.6.80.171</code>) and
-          fill the form: title, points, links, button labels.
+        <Step n="1" title="Add your app + version">
+          Create a folder for each app (e.g. <code className="text-primary">YouTube</code>)
+          and add versions like <code className="text-primary">v123</code>,{" "}
+          <code className="text-primary">v124</code>.
         </Step>
-        <Step n="2" title="Hardcode the URL once">
-          Use{" "}
+        <Step n="2" title="Hardcode one URL pattern">
+          In your dex, build the URL as{" "}
           <code className="text-primary text-xs">
-            /api/public/config/&lt;slug&gt;
-          </code>{" "}
-          inside your dex instead of a GitHub raw URL.
+            /api/public/config/&lt;app&gt;/&lt;BuildConfig.VERSION_NAME&gt;
+          </code>
+          . Same dex works for every version.
         </Step>
         <Step n="3" title="Toggle anytime">
-          Flip <code className="text-foreground">enabled</code> on/off, edit text,
-          and changes go live instantly. No more re-uploading files.
+          Flip <code className="text-foreground">enabled</code> per version.
+          Unreleased versions can fall back to a <code className="text-foreground">default</code> entry.
         </Step>
       </section>
 
