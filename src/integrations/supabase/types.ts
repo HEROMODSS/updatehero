@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_configs: {
+        Row: {
+          cancel_text: string
+          created_at: string
+          credit: string
+          enabled: boolean
+          id: string
+          owner_id: string
+          points: Json
+          slug: string
+          title: string
+          update_link: string
+          update_text: string
+          updated_at: string
+        }
+        Insert: {
+          cancel_text?: string
+          created_at?: string
+          credit?: string
+          enabled?: boolean
+          id?: string
+          owner_id: string
+          points?: Json
+          slug: string
+          title?: string
+          update_link?: string
+          update_text?: string
+          updated_at?: string
+        }
+        Update: {
+          cancel_text?: string
+          created_at?: string
+          credit?: string
+          enabled?: boolean
+          id?: string
+          owner_id?: string
+          points?: Json
+          slug?: string
+          title?: string
+          update_link?: string
+          update_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
