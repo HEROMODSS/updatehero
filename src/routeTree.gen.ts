@@ -14,7 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConfigsIdRouteImport } from './routes/_authenticated/configs.$id'
-import { Route as ApiPublicConfigSlugRouteImport } from './routes/api/public/config.$slug'
+import { Route as ApiPublicConfigAppVersionRouteImport } from './routes/api/public/config.$app.$version'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -40,25 +40,26 @@ const AuthenticatedConfigsIdRoute = AuthenticatedConfigsIdRouteImport.update({
   path: '/configs/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const ApiPublicConfigSlugRoute = ApiPublicConfigSlugRouteImport.update({
-  id: '/api/public/config/$slug',
-  path: '/api/public/config/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const ApiPublicConfigAppVersionRoute =
+  ApiPublicConfigAppVersionRouteImport.update({
+    id: '/api/public/config/$app/$version',
+    path: '/api/public/config/$app/$version',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/configs/$id': typeof AuthenticatedConfigsIdRoute
-  '/api/public/config/$slug': typeof ApiPublicConfigSlugRoute
+  '/api/public/config/$app/$version': typeof ApiPublicConfigAppVersionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/configs/$id': typeof AuthenticatedConfigsIdRoute
-  '/api/public/config/$slug': typeof ApiPublicConfigSlugRoute
+  '/api/public/config/$app/$version': typeof ApiPublicConfigAppVersionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -67,7 +68,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/configs/$id': typeof AuthenticatedConfigsIdRoute
-  '/api/public/config/$slug': typeof ApiPublicConfigSlugRoute
+  '/api/public/config/$app/$version': typeof ApiPublicConfigAppVersionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -76,14 +77,14 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard'
     | '/configs/$id'
-    | '/api/public/config/$slug'
+    | '/api/public/config/$app/$version'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/dashboard'
     | '/configs/$id'
-    | '/api/public/config/$slug'
+    | '/api/public/config/$app/$version'
   id:
     | '__root__'
     | '/'
@@ -91,14 +92,14 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/dashboard'
     | '/_authenticated/configs/$id'
-    | '/api/public/config/$slug'
+    | '/api/public/config/$app/$version'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
-  ApiPublicConfigSlugRoute: typeof ApiPublicConfigSlugRoute
+  ApiPublicConfigAppVersionRoute: typeof ApiPublicConfigAppVersionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -138,11 +139,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfigsIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/api/public/config/$slug': {
-      id: '/api/public/config/$slug'
-      path: '/api/public/config/$slug'
-      fullPath: '/api/public/config/$slug'
-      preLoaderRoute: typeof ApiPublicConfigSlugRouteImport
+    '/api/public/config/$app/$version': {
+      id: '/api/public/config/$app/$version'
+      path: '/api/public/config/$app/$version'
+      fullPath: '/api/public/config/$app/$version'
+      preLoaderRoute: typeof ApiPublicConfigAppVersionRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -166,8 +167,18 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
-  ApiPublicConfigSlugRoute: ApiPublicConfigSlugRoute,
+  ApiPublicConfigAppVersionRoute: ApiPublicConfigAppVersionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
