@@ -9,7 +9,6 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { Copy } from "lucide-react";
 
 type Config = {
   id: string;
@@ -34,10 +33,8 @@ function EditConfig() {
   const [c, setC] = useState<Config | null>(null);
   const [pointsText, setPointsText] = useState("");
   const [saving, setSaving] = useState(false);
-  const [origin, setOrigin] = useState("");
 
   useEffect(() => {
-    setOrigin(window.location.origin);
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -112,26 +109,8 @@ function EditConfig() {
     return <p className="text-sm text-muted-foreground">Loading…</p>;
   }
 
-  const url = `${origin}/api/public/config/${c.app_name}/${c.version}`;
-  const previewJson = JSON.stringify(
-    {
-      credit: c.credit,
-      enabled: c.enabled,
-      title: c.title,
-      points: pointsText
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean),
-      update_link: c.update_link,
-      cancel_text: c.cancel_text,
-      update_text: c.update_text,
-    },
-    null,
-    2,
-  );
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-2xl">
       <Toaster />
       <div>
         <Link
@@ -143,105 +122,64 @@ function EditConfig() {
         <h1 className="mt-2 text-2xl font-semibold tracking-tight">
           {c.app_name} <span className="text-muted-foreground">/</span> {c.version}
         </h1>
+        <p className="text-sm text-muted-foreground mt-1">Advanced settings</p>
       </div>
 
-      <Card className="p-4 flex items-center gap-3">
-        <code className="flex-1 text-xs sm:text-sm break-all text-muted-foreground">
-          {url}
-        </code>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            navigator.clipboard.writeText(url);
-            toast.success("Copied");
-          }}
-        >
-          <Copy className="size-4 mr-1" /> Copy
+      <Card className="p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="text-base">Update enabled</Label>
+            <p className="text-xs text-muted-foreground">
+              When off, the dialog won't show in this version.
+            </p>
+          </div>
+          <Switch
+            checked={c.enabled}
+            onCheckedChange={(v) => set("enabled", v)}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="App name">
+            <Input
+              value={c.app_name}
+              onChange={(e) => set("app_name", e.target.value)}
+            />
+          </Field>
+          <Field label="Version">
+            <Input
+              value={c.version}
+              onChange={(e) => set("version", e.target.value)}
+            />
+          </Field>
+        </div>
+        <Field label="Title">
+          <Input value={c.title} onChange={(e) => set("title", e.target.value)} />
+        </Field>
+        <Field label="Change description (one point per line)">
+          <Textarea
+            rows={5}
+            value={pointsText}
+            onChange={(e) => setPointsText(e.target.value)}
+          />
+        </Field>
+        <Field label="Update link">
+          <Input
+            value={c.update_link}
+            onChange={(e) => set("update_link", e.target.value)}
+          />
+        </Field>
+        <Field label="Update button text">
+          <Input
+            value={c.update_text}
+            onChange={(e) => set("update_text", e.target.value)}
+          />
+        </Field>
+
+        <Button onClick={save} disabled={saving} className="w-full">
+          {saving ? "Saving…" : "Save changes"}
         </Button>
       </Card>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-base">Enabled</Label>
-              <p className="text-xs text-muted-foreground">
-                When off, the dialog won't show.
-              </p>
-            </div>
-            <Switch
-              checked={c.enabled}
-              onCheckedChange={(v) => set("enabled", v)}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="App name">
-              <Input
-                value={c.app_name}
-                onChange={(e) => set("app_name", e.target.value)}
-              />
-            </Field>
-            <Field label="Version">
-              <Input
-                value={c.version}
-                onChange={(e) => set("version", e.target.value)}
-              />
-            </Field>
-          </div>
-          <Field label="Title">
-            <Input value={c.title} onChange={(e) => set("title", e.target.value)} />
-          </Field>
-          <Field label="Credit">
-            <Input
-              value={c.credit}
-              onChange={(e) => set("credit", e.target.value)}
-            />
-          </Field>
-          <Field label="Points (one per line)">
-            <Textarea
-              rows={5}
-              value={pointsText}
-              onChange={(e) => setPointsText(e.target.value)}
-            />
-          </Field>
-          <Field label="Update link">
-            <Input
-              value={c.update_link}
-              onChange={(e) => set("update_link", e.target.value)}
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Cancel text">
-              <Input
-                value={c.cancel_text}
-                onChange={(e) => set("cancel_text", e.target.value)}
-              />
-            </Field>
-            <Field label="Update text">
-              <Input
-                value={c.update_text}
-                onChange={(e) => set("update_text", e.target.value)}
-              />
-            </Field>
-          </div>
-
-          <Button onClick={save} disabled={saving} className="w-full">
-            {saving ? "Saving…" : "Save changes"}
-          </Button>
-        </Card>
-
-        <Card className="p-6">
-          <Label className="text-base">JSON preview</Label>
-          <p className="text-xs text-muted-foreground mb-2">
-            This is exactly what the dex receives.
-          </p>
-          <pre className="bg-muted/50 rounded-md p-4 text-xs overflow-auto max-h-[600px] border border-border">
-            {previewJson}
-          </pre>
-        </Card>
-      </div>
     </div>
   );
 }
