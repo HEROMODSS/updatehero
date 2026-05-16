@@ -1,6 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { LogIn, BookOpen, Smartphone, Zap, ToggleRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -10,84 +13,127 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Manage your Android UpdateDialog JSON configs from one dashboard. No GitHub repo required.",
+          "Auto-fetch every app version. Toggle updates per version with one URL.",
       },
     ],
   }),
 });
 
 function Landing() {
+  const navigate = useNavigate();
+  const [checking, setChecking] = useState(true);
+  const [view, setView] = useState<"home" | "instructions">("home");
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        navigate({ to: "/dashboard" });
+        return;
+      }
+      setChecking(false);
+    });
+  }, [navigate]);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="size-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="mx-auto max-w-5xl px-6 h-14 flex items-center justify-between">
-        <div className="font-semibold tracking-tight">
-          <span className="text-primary">●</span> dexconfig
+        <div className="font-semibold tracking-tight flex items-center gap-2">
+          <span className="inline-flex size-6 items-center justify-center rounded-md bg-primary/15 text-primary">
+            <Zap className="size-3.5" />
+          </span>
+          dexconfig
         </div>
-        <Link to="/login">
-          <Button variant="outline" size="sm">Sign in</Button>
-        </Link>
       </header>
 
-      <section className="mx-auto max-w-3xl px-6 pt-20 pb-16 text-center">
+      <section className="mx-auto max-w-3xl px-6 pt-16 pb-10 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
-          <span className="size-1.5 rounded-full bg-primary" /> No more raw GitHub files
+          <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+          One URL. Every version. Toggle anything.
         </div>
         <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-tight">
-          Control your <span className="text-primary">UpdateDialog</span> remotely.
+          Control update dialogs <span className="text-primary">remotely</span>.
         </h1>
         <p className="mt-5 text-base sm:text-lg text-muted-foreground">
-          Skip creating a repo and editing raw files. Manage every app's update
-          config from one dashboard — toggle <code className="text-foreground">enabled</code>,
-          edit text, points and links instantly.
+          Add your app once. New versions show up automatically the moment the dex
+          calls home — flip updates on or off per version, instantly.
         </p>
-        <div className="mt-8 flex justify-center gap-3">
+      </section>
+
+      {view === "home" ? (
+        <section className="mx-auto max-w-3xl px-6 pb-24 grid sm:grid-cols-2 gap-4">
+          <Card
+            onClick={() => navigate({ to: "/login" })}
+            className="p-6 cursor-pointer hover:border-primary transition group"
+          >
+            <div className="size-10 rounded-lg bg-primary/15 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition">
+              <LogIn className="size-5" />
+            </div>
+            <h3 className="mt-4 font-semibold text-lg">Sign in</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Open your dashboard. Add apps, toggle updates, edit text live.
+            </p>
+            <span className="mt-4 inline-block text-sm text-primary">
+              Continue →
+            </span>
+          </Card>
+          <Card
+            onClick={() => setView("instructions")}
+            className="p-6 cursor-pointer hover:border-primary transition group"
+          >
+            <div className="size-10 rounded-lg bg-primary/15 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition">
+              <BookOpen className="size-5" />
+            </div>
+            <h3 className="mt-4 font-semibold text-lg">Instructions</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              How to wire up your dex once and forget about it.
+            </p>
+            <span className="mt-4 inline-block text-sm text-primary">
+              Read →
+            </span>
+          </Card>
+        </section>
+      ) : (
+        <section className="mx-auto max-w-3xl px-6 pb-24 space-y-4">
+          <button
+            onClick={() => setView("home")}
+            className="text-sm text-muted-foreground hover:text-primary"
+          >
+            ← Back
+          </button>
+          <Card className="p-6 space-y-5">
+            <Step n="1" icon={<Smartphone className="size-4" />} title="Add the dex once">
+              Drop the merged <code className="text-primary">UpdateDialog</code> dex
+              into the APK. It auto-detects package name and version.
+            </Step>
+            <Step n="2" icon={<LogIn className="size-4" />} title="Add the app">
+              In the dashboard, enter the package name (e.g.{" "}
+              <code className="text-primary">com.vanced.android.youtube</code>) and
+              create a <code className="text-primary">default</code> version with
+              your update message.
+            </Step>
+            <Step n="3" icon={<Zap className="size-4" />} title="New versions auto-appear">
+              When users open a new version, the dex hits the API and the version
+              shows up on your dashboard automatically — inheriting from{" "}
+              <code className="text-primary">default</code>.
+            </Step>
+            <Step n="4" icon={<ToggleRight className="size-4" />} title="Toggle per version">
+              Flip any version on or off in one click. The dialog title and points
+              are editable inline.
+            </Step>
+          </Card>
           <Link to="/login">
-            <Button size="lg">Get started</Button>
+            <Button size="lg" className="w-full">Get started</Button>
           </Link>
-          <a href="#how">
-            <Button size="lg" variant="outline">How it works</Button>
-          </a>
-        </div>
-      </section>
-
-      <section id="how" className="mx-auto max-w-5xl px-6 pb-24 grid md:grid-cols-3 gap-4">
-        <Step n="1" title="Add your app + version">
-          Create a folder for each app (e.g. <code className="text-primary">YouTube</code>)
-          and add versions like <code className="text-primary">v123</code>,{" "}
-          <code className="text-primary">v124</code>.
-        </Step>
-        <Step n="2" title="Hardcode one URL pattern">
-          In your dex, build the URL as{" "}
-          <code className="text-primary text-xs">
-            /api/public/config/&lt;app&gt;/&lt;BuildConfig.VERSION_NAME&gt;
-          </code>
-          . Same dex works for every version.
-        </Step>
-        <Step n="3" title="Toggle anytime">
-          Flip <code className="text-foreground">enabled</code> per version.
-          Unreleased versions can fall back to a <code className="text-foreground">default</code> entry.
-        </Step>
-      </section>
-
-      <section className="mx-auto max-w-3xl px-6 pb-24">
-        <Card className="p-6">
-          <p className="text-sm text-muted-foreground">JSON your dex will receive:</p>
-          <pre className="mt-3 text-xs sm:text-sm bg-muted/50 border border-border rounded-md p-4 overflow-auto">
-{`{
-  "credit": "MR. NoOB",
-  "enabled": true,
-  "title": "🔔 Update Available!",
-  "points": [
-    "🔥 Faster performance and smoother UI",
-    "🛠️ Bug fixes & stability improvements"
-  ],
-  "update_link": "https://t.me/heromodss",
-  "cancel_text": "NOT NOW",
-  "update_text": "UPDATE NOW"
-}`}
-          </pre>
-        </Card>
-      </section>
+        </section>
+      )}
 
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
         Built on Lovable Cloud.
@@ -96,12 +142,28 @@ function Landing() {
   );
 }
 
-function Step({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
+function Step({
+  n,
+  icon,
+  title,
+  children,
+}: {
+  n: string;
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <Card className="p-6">
-      <div className="text-primary font-mono text-sm">{n.padStart(2, "0")}</div>
-      <h3 className="mt-2 font-semibold">{title}</h3>
-      <p className="mt-2 text-sm text-muted-foreground">{children}</p>
-    </Card>
+    <div className="flex gap-4">
+      <div className="shrink-0 size-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center font-mono text-sm">
+        {n}
+      </div>
+      <div className="flex-1">
+        <h4 className="font-semibold flex items-center gap-2">
+          {icon} {title}
+        </h4>
+        <p className="mt-1 text-sm text-muted-foreground">{children}</p>
+      </div>
+    </div>
   );
 }

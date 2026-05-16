@@ -1,20 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-// Public endpoint matching what the dex calls. The dex should hit:
+// Public endpoint matching what the dex calls:
 //   https://<your-domain>/api/public/config/<app>/<version>
-// where <app> is e.g. context.getPackageName() (or any string you pick)
-// and <version> is BuildConfig.VERSION_NAME.
 //
-// If no exact (app, version) row exists we fall back to (app, "default")
-// so a single "default" config can cover unreleased versions.
+// Behavior:
+// 1. Exact (app, version) row exists -> return it.
+// 2. Otherwise, if (app, "default") exists -> auto-create a new row for this
+//    (app, version) inheriting all fields from default (so the new version
+//    auto-appears in the dashboard and can be toggled separately). Return
+//    that newly-created row's JSON.
+// 3. Otherwise -> 404.
 export const Route = createFileRoute("/api/public/config/$app/$version")({
   server: {
     handlers: {
       GET: async ({ params }) => {
         const app = (params.app ?? "").trim();
         const version = (params.version ?? "").trim();
-        if (!app || app.length > 200 || !version || version.length > 100) {
+        if (
+          !app ||
+          app.length > 200 ||
+          !version ||
+          version.length > 100 ||
+          !/^[A-Za-z0-9._-]+$/.test(app) ||
+          !/^[A-Za-z0-9._-]+$/.test(version)
+        ) {
           return new Response("Invalid params", { status: 400 });
         }
 
@@ -29,14 +39,46 @@ export const Route = createFileRoute("/api/public/config/$app/$version")({
           .maybeSingle();
 
         let row = exact.data;
-        if (!row) {
-          const fallback = await supabaseAdmin
+
+        if (!row && version !== "default") {
+          // Look up default to inherit values + owner.
+          const def = await supabaseAdmin
             .from("app_configs")
-            .select(cols)
+            .select(
+              "owner_id,credit,enabled,title,points,update_link,cancel_text,update_text",
+            )
             .eq("app_name", app)
             .eq("version", "default")
             .maybeSingle();
-          row = fallback.data;
+
+          if (def.data) {
+            // Auto-create the version row so it shows up in the dashboard.
+            const created = await supabaseAdmin
+              .from("app_configs")
+              .insert({
+                app_name: app,
+                version,
+                owner_id: def.data.owner_id,
+                credit: def.data.credit,
+                enabled: def.data.enabled,
+                title: def.data.title,
+                points: def.data.points ?? [],
+                update_link: def.data.update_link,
+                cancel_text: def.data.cancel_text,
+                update_text: def.data.update_text,
+              })
+              .select(cols)
+              .maybeSingle();
+            row = created.data ?? {
+              credit: def.data.credit,
+              enabled: def.data.enabled,
+              title: def.data.title,
+              points: def.data.points,
+              update_link: def.data.update_link,
+              cancel_text: def.data.cancel_text,
+              update_text: def.data.update_text,
+            };
+          }
         }
 
         if (!row) {
@@ -60,7 +102,7 @@ export const Route = createFileRoute("/api/public/config/$app/$version")({
           status: 200,
           headers: {
             "Content-Type": "application/json; charset=utf-8",
-            "Cache-Control": "public, max-age=15",
+            "Cache-Control": "no-store",
             "Access-Control-Allow-Origin": "*",
           },
         });
