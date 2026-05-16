@@ -9,7 +9,6 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { Copy } from "lucide-react";
 
 type Config = {
   id: string;
@@ -34,10 +33,8 @@ function EditConfig() {
   const [c, setC] = useState<Config | null>(null);
   const [pointsText, setPointsText] = useState("");
   const [saving, setSaving] = useState(false);
-  const [origin, setOrigin] = useState("");
 
   useEffect(() => {
-    setOrigin(window.location.origin);
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
