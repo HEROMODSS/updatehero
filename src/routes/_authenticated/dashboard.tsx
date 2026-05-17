@@ -185,7 +185,7 @@ function Dashboard() {
       <Toaster />
 
       <section className="relative overflow-hidden rounded-2xl border border-primary/20 bg-hero-glass px-5 py-6 shadow-hero backdrop-blur-xl sm:px-8 sm:py-8">
-        <div className="absolute inset-x-0 top-0 h-px bg-hero-sheen" />
+        <div className="absolute inset-x-0 top-0 h-px [background:var(--hero-sheen)]" />
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <Badge className="bg-primary/15 text-primary hover:bg-primary/20">
