@@ -59,7 +59,7 @@ function LoginPage() {
         <Link to="/" className="text-sm text-muted-foreground hover:text-primary">
           ← Back to UpdateHero
         </Link>
-        <Card className="mt-4 overflow-hidden border-primary/20 bg-hero-glass p-7 shadow-hero backdrop-blur-xl">
+        <Card className="relative mt-4 overflow-hidden border-primary/20 bg-hero-glass p-7 shadow-hero backdrop-blur-xl">
           <div className="absolute inset-x-0 top-0 h-px [background:var(--hero-sheen)]" />
           <Badge className="bg-primary/15 text-primary hover:bg-primary/20">
             <Sparkles className="mr-1 size-3" /> UpdateHero
