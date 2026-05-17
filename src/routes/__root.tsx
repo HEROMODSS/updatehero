@@ -74,7 +74,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "UpdateHero" },
       { name: "description", content: "Manual app version update control with private toggles." },
-      { name: "author", content: "Lovable" },
+      { name: "author", content: "Hero" },
       { property: "og:title", content: "UpdateHero" },
       { property: "og:description", content: "Manual app version update control with private toggles." },
       { property: "og:type", content: "website" },
