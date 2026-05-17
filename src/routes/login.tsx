@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
+import { Heart, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -51,21 +53,25 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-5 py-10">
       <Toaster />
-      <div className="w-full max-w-md">
-        <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
-          ← Back
+      <div className="w-full max-w-md animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
+        <Link to="/" className="text-sm text-muted-foreground hover:text-primary">
+          ← Back to UpdateHero
         </Link>
-        <Card className="mt-4 p-8">
-          <h1 className="text-2xl font-semibold">
+        <Card className="relative mt-4 overflow-hidden border-primary/20 bg-hero-glass p-7 shadow-hero backdrop-blur-xl">
+          <div className="absolute inset-x-0 top-0 h-px [background:var(--hero-sheen)]" />
+          <Badge className="bg-primary/15 text-primary hover:bg-primary/20">
+            <Sparkles className="mr-1 size-3" /> UpdateHero
+          </Badge>
+          <h1 className="mt-5 text-3xl font-semibold tracking-tight">
             {mode === "signin" ? "Sign in" : "Create account"}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage your UpdateDialog configs.
+          <p className="mt-2 text-sm text-muted-foreground">
+            Manage manual app versions and update toggles.
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-7 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -75,6 +81,7 @@ function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
+                className="h-12 bg-hero-field/70"
               />
             </div>
             <div className="space-y-2">
@@ -87,22 +94,29 @@ function LoginPage() {
                 required
                 minLength={6}
                 autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                className="h-12 bg-hero-field/70"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "..." : mode === "signin" ? "Sign in" : "Create account"}
+            <Button
+              type="submit"
+              className="h-12 w-full rounded-xl shadow-hero-sm"
+              disabled={loading}
+            >
+              {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </Button>
           </form>
 
           <button
             type="button"
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="mt-4 w-full text-sm text-muted-foreground hover:text-foreground"
+            className="mt-5 w-full text-sm text-muted-foreground hover:text-primary"
           >
-            {mode === "signin"
-              ? "No account? Create one"
-              : "Already have an account? Sign in"}
+            {mode === "signin" ? "No account? Create one" : "Already have an account? Sign in"}
           </button>
+
+          <p className="mt-6 flex items-center justify-center gap-1 text-xs text-muted-foreground">
+            Made with <Heart className="size-3 text-primary" /> by Hero
+          </p>
         </Card>
       </div>
     </div>
