@@ -6,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
+import { ArrowLeft, Heart, Save, Sparkles } from "lucide-react";
 
 type Config = {
   id: string;
@@ -30,7 +32,7 @@ export const Route = createFileRoute("/_authenticated/configs/$id")({
 function EditConfig() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const [c, setC] = useState<Config | null>(null);
+  const [config, setConfig] = useState<Config | null>(null);
   const [pointsText, setPointsText] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -40,11 +42,7 @@ function EditConfig() {
   }, [id]);
 
   async function load() {
-    const { data, error } = await supabase
-      .from("app_configs")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
+    const { data, error } = await supabase.from("app_configs").select("*").eq("id", id).maybeSingle();
     if (error) {
       toast.error(error.message);
       return;
@@ -55,7 +53,7 @@ function EditConfig() {
       return;
     }
     const points = Array.isArray(data.points) ? (data.points as string[]) : [];
-    setC({
+    setConfig({
       id: data.id,
       app_name: data.app_name,
       version: data.version,
@@ -70,113 +68,103 @@ function EditConfig() {
     setPointsText(points.join("\n"));
   }
 
-  function set<K extends keyof Config>(k: K, v: Config[K]) {
-    if (!c) return;
-    setC({ ...c, [k]: v });
+  function set<K extends keyof Config>(key: K, value: Config[K]) {
+    if (!config) return;
+    setConfig({ ...config, [key]: value });
   }
 
   async function save() {
-    if (!c) return;
-    const points = pointsText
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    if (!config) return;
+    const points = pointsText.split("\n").map((point) => point.trim()).filter(Boolean);
     setSaving(true);
     const { error } = await supabase
       .from("app_configs")
       .update({
-        app_name: c.app_name,
-        version: c.version,
-        credit: c.credit,
-        enabled: c.enabled,
-        title: c.title,
+        app_name: config.app_name,
+        version: config.version,
+        credit: "Made with ❤️ by Hero",
+        enabled: config.enabled,
+        title: config.title,
         points,
-        update_link: c.update_link,
-        cancel_text: c.cancel_text,
-        update_text: c.update_text,
+        update_link: config.update_link,
+        cancel_text: "",
+        update_text: config.update_text || "UPDATE NOW",
       })
-      .eq("id", c.id);
+      .eq("id", config.id);
     setSaving(false);
     if (error) {
       toast.error(error.message);
       return;
     }
     toast.success("Saved");
-    setC({ ...c, points });
+    setConfig({ ...config, credit: "Made with ❤️ by Hero", points, cancel_text: "" });
   }
 
-  if (!c) {
-    return <p className="text-sm text-muted-foreground">Loading…</p>;
+  if (!config) {
+    return (
+      <Card className="border-primary/15 bg-hero-glass p-8 text-center text-sm text-muted-foreground shadow-hero backdrop-blur-xl">
+        Loading settings…
+      </Card>
+    );
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="mx-auto max-w-3xl space-y-6 animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
       <Toaster />
       <div>
-        <Link
-          to="/dashboard"
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          ← Back
+        <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
+          <ArrowLeft className="size-4" /> Back
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          {c.app_name} <span className="text-muted-foreground">/</span> {c.version}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">Advanced settings</p>
+        <div className="mt-4 overflow-hidden rounded-2xl border border-primary/20 bg-hero-glass p-6 shadow-hero backdrop-blur-xl">
+          <div className="h-px [background:var(--hero-sheen)]" />
+          <Badge className="mt-5 bg-primary/15 text-primary hover:bg-primary/20">
+            <Sparkles className="mr-1 size-3" /> Version editor
+          </Badge>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+            {config.app_name} <span className="text-muted-foreground">/</span> {config.version}
+          </h1>
+          <p className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
+            Made with <Heart className="size-4 text-primary" /> by Hero
+          </p>
+        </div>
       </div>
 
-      <Card className="p-6 space-y-4">
-        <div className="flex items-center justify-between">
+      <Card className="space-y-5 border-primary/20 bg-hero-glass p-5 shadow-hero backdrop-blur-xl sm:p-6">
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-primary/10 bg-hero-glass-strong p-4">
           <div>
-            <Label className="text-base">Update enabled</Label>
-            <p className="text-xs text-muted-foreground">
-              When off, the dialog won't show in this version.
-            </p>
+            <Label className="text-base">Update Toggle</Label>
+            <p className="mt-1 text-xs text-muted-foreground">When disabled, this version stays off.</p>
           </div>
-          <Switch
-            checked={c.enabled}
-            onCheckedChange={(v) => set("enabled", v)}
-          />
+          <Switch checked={config.enabled} onCheckedChange={(value) => set("enabled", value)} />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="App name">
-            <Input
-              value={c.app_name}
-              onChange={(e) => set("app_name", e.target.value)}
-            />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="App Name">
+            <Input value={config.app_name} onChange={(event) => set("app_name", event.target.value)} className="h-11 bg-hero-field/70" />
           </Field>
-          <Field label="Version">
-            <Input
-              value={c.version}
-              onChange={(e) => set("version", e.target.value)}
-            />
+          <Field label="Version Number">
+            <Input value={config.version} onChange={(event) => set("version", event.target.value)} className="h-11 bg-hero-field/70" />
           </Field>
         </div>
+
         <Field label="Title">
-          <Input value={c.title} onChange={(e) => set("title", e.target.value)} />
-        </Field>
-        <Field label="Change description (one point per line)">
-          <Textarea
-            rows={5}
-            value={pointsText}
-            onChange={(e) => setPointsText(e.target.value)}
-          />
-        </Field>
-        <Field label="Update link">
-          <Input
-            value={c.update_link}
-            onChange={(e) => set("update_link", e.target.value)}
-          />
-        </Field>
-        <Field label="Update button text">
-          <Input
-            value={c.update_text}
-            onChange={(e) => set("update_text", e.target.value)}
-          />
+          <Input value={config.title} onChange={(event) => set("title", event.target.value)} className="h-11 bg-hero-field/70" />
         </Field>
 
-        <Button onClick={save} disabled={saving} className="w-full">
+        <Field label="Change Description">
+          <Textarea rows={5} value={pointsText} onChange={(event) => setPointsText(event.target.value)} className="bg-hero-field/70" />
+        </Field>
+
+        <Field label="Update Link">
+          <Input value={config.update_link} onChange={(event) => set("update_link", event.target.value)} className="h-11 bg-hero-field/70" />
+        </Field>
+
+        <Field label="Update Button Text">
+          <Input value={config.update_text} onChange={(event) => set("update_text", event.target.value)} className="h-11 bg-hero-field/70" />
+        </Field>
+
+        <Button onClick={save} disabled={saving} className="h-12 w-full rounded-xl shadow-hero-sm">
+          <Save className="size-4" />
           {saving ? "Saving…" : "Save changes"}
         </Button>
       </Card>
@@ -184,13 +172,7 @@ function EditConfig() {
   );
 }
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
