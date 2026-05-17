@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
@@ -33,20 +34,23 @@ function AuthLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border">
-        <div className="mx-auto max-w-5xl px-6 h-14 flex items-center justify-between">
-          <Link to="/dashboard" className="font-semibold tracking-tight">
-            <span className="text-primary">●</span> dexconfig
+      <header className="sticky top-0 z-20 border-b border-primary/10 bg-hero-glass/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-6">
+          <Link to="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
+            <span className="inline-flex size-8 items-center justify-center rounded-xl bg-primary/15 text-primary shadow-hero-sm">
+              <Sparkles className="size-4" />
+            </span>
+            UpdateHero
           </Link>
           <div className="flex items-center gap-3 text-sm">
             <span className="text-muted-foreground hidden sm:block">{email}</span>
-            <Button variant="outline" size="sm" onClick={logout}>
+            <Button variant="outline" size="sm" onClick={logout} className="rounded-xl bg-hero-glass-strong">
               Sign out
             </Button>
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-6 py-8">
+      <main className="mx-auto max-w-6xl px-5 py-8 sm:px-6">
         <Outlet />
       </main>
     </div>
