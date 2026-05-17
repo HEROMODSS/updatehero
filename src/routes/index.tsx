@@ -62,11 +62,10 @@ function Landing() {
           <Badge className="bg-primary/15 text-primary hover:bg-primary/20">
             Manual method restored
           </Badge>
-          <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-6xl">
-            UpdateHero
-          </h1>
+          <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-6xl">UpdateHero</h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            Add App Name and Version Number manually, then toggle each saved version live or disabled from one private dashboard.
+            Add App Name and Version Number manually, then toggle each saved version live or
+            disabled from one private dashboard.
           </p>
           <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-hero-glass-strong px-4 py-2 text-sm text-primary shadow-hero-sm">
             Made with ❤️ by Hero
@@ -98,29 +97,37 @@ function Landing() {
               </div>
               <h2 className="mt-5 text-xl font-semibold">Instructions</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                See the old working flow: create app folder, add versions, use the exact version link.
+                See the old working flow: create app folder, add versions, use the exact version
+                link.
               </p>
               <span className="mt-5 inline-flex text-sm font-medium text-primary">Read →</span>
             </Card>
           </section>
         ) : (
           <section className="mt-6 space-y-4">
-            <button onClick={() => setView("home")} className="text-sm text-muted-foreground hover:text-primary">
+            <button
+              onClick={() => setView("home")}
+              className="text-sm text-muted-foreground hover:text-primary"
+            >
               ← Back
             </button>
             <Card className="space-y-5 border-primary/15 bg-hero-glass p-6 shadow-hero backdrop-blur-xl">
               <Step icon={<Plus className="size-4" />} title="Add app manually">
-                Enter App Name and Version Number. The dashboard creates an Android app folder with that version inside.
+                Enter App Name and Version Number. The dashboard creates an Android app folder with
+                that version inside.
               </Step>
               <Step icon={<ToggleRight className="size-4" />} title="Toggle each version">
                 Every version has its own Update Toggle, Edit, Delete and Live status.
               </Step>
               <Step icon={<BookOpen className="size-4" />} title="Use the saved version link">
-                The public link only works for versions you created in UpdateHero, matching the old reliable method.
+                The public link only works for versions you created in UpdateHero, matching the old
+                reliable method.
               </Step>
             </Card>
             <Link to="/login">
-              <Button size="lg" className="h-12 w-full rounded-xl shadow-hero-sm">Sign in to UpdateHero</Button>
+              <Button size="lg" className="h-12 w-full rounded-xl shadow-hero-sm">
+                Sign in to UpdateHero
+              </Button>
             </Link>
           </section>
         )}
@@ -133,10 +140,20 @@ function Landing() {
   );
 }
 
-function Step({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function Step({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex gap-4 rounded-xl border border-primary/10 bg-hero-glass-strong p-4">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">{icon}</div>
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+        {icon}
+      </div>
       <div>
         <h3 className="font-semibold">{title}</h3>
         <p className="mt-1 text-sm text-muted-foreground">{children}</p>

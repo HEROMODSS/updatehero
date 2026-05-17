@@ -7,23 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import {
-  Check,
-  ChevronRight,
-  Edit3,
-  ExternalLink,
-  Plus,
-  Sparkles,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Check, ChevronRight, Edit3, ExternalLink, Plus, Sparkles, Trash2, X } from "lucide-react";
 
 type ConfigRow = {
   id: string;
@@ -118,7 +105,9 @@ function Dashboard() {
     setCreating(false);
 
     if (error) {
-      toast.error(error.message.includes("duplicate") ? "This app version already exists." : error.message);
+      toast.error(
+        error.message.includes("duplicate") ? "This app version already exists." : error.message,
+      );
       return;
     }
 
@@ -131,17 +120,26 @@ function Dashboard() {
 
   async function toggleEnabled(row: ConfigRow, value: boolean) {
     const previous = row.enabled;
-    setRows((current) => current.map((item) => (item.id === row.id ? { ...item, enabled: value } : item)));
-    const { error } = await supabase.from("app_configs").update({ enabled: value }).eq("id", row.id);
+    setRows((current) =>
+      current.map((item) => (item.id === row.id ? { ...item, enabled: value } : item)),
+    );
+    const { error } = await supabase
+      .from("app_configs")
+      .update({ enabled: value })
+      .eq("id", row.id);
     if (error) {
       toast.error(error.message);
-      setRows((current) => current.map((item) => (item.id === row.id ? { ...item, enabled: previous } : item)));
+      setRows((current) =>
+        current.map((item) => (item.id === row.id ? { ...item, enabled: previous } : item)),
+      );
     }
   }
 
   async function toggleAllForApp(app: string, value: boolean) {
     const ids = rows.filter((row) => row.app_name === app).map((row) => row.id);
-    setRows((current) => current.map((item) => (item.app_name === app ? { ...item, enabled: value } : item)));
+    setRows((current) =>
+      current.map((item) => (item.app_name === app ? { ...item, enabled: value } : item)),
+    );
     const { error } = await supabase.from("app_configs").update({ enabled: value }).in("id", ids);
     if (error) {
       toast.error(error.message);
@@ -195,7 +193,8 @@ function Dashboard() {
               Manual app update control
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-              Add each app and version yourself. Only saved versions go live, so the old working method stays clean and predictable.
+              Add each app and version yourself. Only saved versions go live, so the old working
+              method stays clean and predictable.
             </p>
           </div>
           <div className="rounded-xl border border-primary/15 bg-hero-glass-strong px-4 py-3 text-sm shadow-hero-sm backdrop-blur-xl">
@@ -210,7 +209,10 @@ function Dashboard() {
           <h2 className="text-lg font-semibold">Add app version</h2>
           <p className="text-sm text-muted-foreground">Boxes: App Name | Version Number</p>
         </div>
-        <form onSubmit={createConfig} className="grid gap-4 p-5 sm:grid-cols-[1fr_1fr_auto] sm:items-end sm:p-6">
+        <form
+          onSubmit={createConfig}
+          className="grid gap-4 p-5 sm:grid-cols-[1fr_1fr_auto] sm:items-end sm:p-6"
+        >
           <div className="space-y-2">
             <Label htmlFor="app">App Name</Label>
             <Input
@@ -248,7 +250,9 @@ function Dashboard() {
         <Card className="border-primary/15 bg-hero-glass p-10 text-center shadow-hero backdrop-blur-xl">
           <AndroidIcon className="mx-auto size-12" />
           <h3 className="mt-4 text-lg font-semibold">No app folder yet</h3>
-          <p className="mt-1 text-sm text-muted-foreground">Add your first App Name and Version Number above.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Add your first App Name and Version Number above.
+          </p>
         </Card>
       ) : (
         <div className="space-y-5">
@@ -264,16 +268,29 @@ function Dashboard() {
                 className="overflow-hidden border-primary/15 bg-hero-glass shadow-hero backdrop-blur-xl animate-in fade-in-50 slide-in-from-bottom-4 duration-500"
                 style={{ animationDelay: `${Math.min(index * 60, 240)}ms` }}
               >
-                <Collapsible open={isOpen} onOpenChange={(open) => setOpenApps((prev) => ({ ...prev, [app]: open }))}>
+                <Collapsible
+                  open={isOpen}
+                  onOpenChange={(open) => setOpenApps((prev) => ({ ...prev, [app]: open }))}
+                >
                   <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                     <CollapsibleTrigger className="group flex min-w-0 flex-1 items-center gap-3 text-left">
-                      <ChevronRight className={`size-5 text-muted-foreground transition-transform ${isOpen ? "rotate-90" : ""}`} />
+                      <ChevronRight
+                        className={`size-5 text-muted-foreground transition-transform ${isOpen ? "rotate-90" : ""}`}
+                      />
                       <AndroidIcon />
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="truncate text-lg font-semibold">{app}</span>
-                          <Badge variant="secondary">{versions.length} version{versions.length === 1 ? "" : "s"}</Badge>
-                          <Badge className={hasLive ? "bg-primary/15 text-primary hover:bg-primary/20" : "bg-secondary text-secondary-foreground"}>
+                          <Badge variant="secondary">
+                            {versions.length} version{versions.length === 1 ? "" : "s"}
+                          </Badge>
+                          <Badge
+                            className={
+                              hasLive
+                                ? "bg-primary/15 text-primary hover:bg-primary/20"
+                                : "bg-secondary text-secondary-foreground"
+                            }
+                          >
                             {hasLive ? `${enabledCount} live` : "offline"}
                           </Badge>
                         </div>
@@ -281,8 +298,14 @@ function Dashboard() {
                       </div>
                     </CollapsibleTrigger>
                     <div className="flex items-center justify-between gap-3 sm:justify-end">
-                      <span className="text-xs font-medium text-muted-foreground">{allOn ? "Enabled" : enabledCount === 0 ? "Disabled" : "Mixed"}</span>
-                      <Switch checked={allOn} onCheckedChange={(value) => toggleAllForApp(app, value)} aria-label={`Toggle ${app}`} />
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {allOn ? "Enabled" : enabledCount === 0 ? "Disabled" : "Mixed"}
+                      </span>
+                      <Switch
+                        checked={allOn}
+                        onCheckedChange={(value) => toggleAllForApp(app, value)}
+                        aria-label={`Toggle ${app}`}
+                      />
                     </div>
                   </div>
 
@@ -309,7 +332,12 @@ function Dashboard() {
                         ))}
                       </div>
                       <div className="px-5 py-4 sm:px-6">
-                        <Button variant="outline" size="sm" onClick={() => addAnotherVersion(app)} className="rounded-xl bg-hero-glass-strong">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addAnotherVersion(app)}
+                          className="rounded-xl bg-hero-glass-strong"
+                        >
                           <Plus className="size-4" />
                           Add another version of this app
                         </Button>
@@ -356,7 +384,9 @@ function VersionRow({
     <div className="grid gap-3 px-5 py-4 sm:grid-cols-[minmax(90px,0.8fr)_minmax(160px,2fr)_auto_auto_auto_auto] sm:items-center sm:px-6">
       <div className="flex items-center gap-2">
         <span className="text-xs font-medium text-muted-foreground sm:hidden">Version</span>
-        <code className="rounded-lg bg-hero-field px-2.5 py-1 text-xs font-semibold text-foreground">{row.version}</code>
+        <code className="rounded-lg bg-hero-field px-2.5 py-1 text-xs font-semibold text-foreground">
+          {row.version}
+        </code>
       </div>
 
       <div className="min-w-0">
@@ -375,7 +405,13 @@ function VersionRow({
               }}
               className="h-9 bg-hero-field/80"
             />
-            <Button size="icon" variant="ghost" className="size-9" onClick={commit} title="Save text">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-9"
+              onClick={commit}
+              title="Save text"
+            >
               <Check className="size-4 text-primary" />
             </Button>
             <Button
@@ -392,7 +428,11 @@ function VersionRow({
             </Button>
           </div>
         ) : (
-          <button onClick={() => setEditing(true)} className="min-w-0 truncate text-left text-sm hover:text-primary" title="Click to edit description">
+          <button
+            onClick={() => setEditing(true)}
+            className="min-w-0 truncate text-left text-sm hover:text-primary"
+            title="Click to edit description"
+          >
             {row.title}
           </button>
         )}
@@ -400,7 +440,11 @@ function VersionRow({
 
       <div className="flex items-center gap-2">
         <span className="text-xs font-medium text-muted-foreground sm:hidden">Update Toggle</span>
-        <Switch checked={row.enabled} onCheckedChange={onToggle} aria-label={`Toggle ${row.version}`} />
+        <Switch
+          checked={row.enabled}
+          onCheckedChange={onToggle}
+          aria-label={`Toggle ${row.version}`}
+        />
       </div>
 
       <Link to="/configs/$id" params={{ id: row.id }} className="w-fit">
@@ -410,13 +454,25 @@ function VersionRow({
         </Button>
       </Link>
 
-      <Button variant="ghost" size="sm" onClick={onDelete} className="w-fit rounded-xl" title="Delete">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onDelete}
+        className="w-fit rounded-xl"
+        title="Delete"
+      >
         <Trash2 className="size-4" />
         <span className="sm:hidden">Delete</span>
       </Button>
 
       <a href={liveUrl} target="_blank" rel="noreferrer" className="w-fit">
-        <Badge className={row.enabled ? "bg-primary/15 text-primary hover:bg-primary/20" : "bg-secondary text-secondary-foreground"}>
+        <Badge
+          className={
+            row.enabled
+              ? "bg-primary/15 text-primary hover:bg-primary/20"
+              : "bg-secondary text-secondary-foreground"
+          }
+        >
           {row.enabled ? "live" : "disabled"}
           <ExternalLink className="ml-1 size-3" />
         </Badge>
@@ -427,7 +483,9 @@ function VersionRow({
 
 function AndroidIcon({ className = "" }: { className?: string }) {
   return (
-    <span className={`inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary shadow-hero-sm ${className}`}>
+    <span
+      className={`inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary shadow-hero-sm ${className}`}
+    >
       <svg viewBox="0 0 24 24" className="size-6" fill="currentColor" aria-hidden>
         <path d="M6 10v6a1.5 1.5 0 1 1-3 0v-6a1.5 1.5 0 1 1 3 0Zm15 0v6a1.5 1.5 0 1 1-3 0v-6a1.5 1.5 0 1 1 3 0ZM7 10.5h10V18a1 1 0 0 1-1 1h-1.25v2.25a1.25 1.25 0 1 1-2.5 0V19h-2.5v2.25a1.25 1.25 0 1 1-2.5 0V19H8a1 1 0 0 1-1-1v-7.5ZM8.5 9C7.4 9 7 8.4 7 7.5c0-1.9 1.2-3.55 3-4.43l-.7-1.27a.4.4 0 0 1 .7-.4l.74 1.33A6.6 6.6 0 0 1 12 2.5c.8 0 1.55.1 2.26.23l.74-1.33a.4.4 0 1 1 .7.4l-.7 1.27c1.8.88 3 2.53 3 4.43 0 .9-.4 1.5-1.5 1.5h-8ZM10 6.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm4 0a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" />
       </svg>

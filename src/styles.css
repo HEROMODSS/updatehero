@@ -104,7 +104,12 @@
   --hero-glass: oklch(1 0 0 / 72%);
   --hero-glass-strong: oklch(1 0 0 / 86%);
   --hero-field: oklch(0.985 0.012 350 / 72%);
-  --hero-sheen: linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary) 70%, transparent), transparent);
+  --hero-sheen: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--primary) 70%, transparent),
+    transparent
+  );
 }
 
 .dark {
@@ -143,7 +148,12 @@
   --hero-glass: oklch(0.25 0.072 334 / 58%);
   --hero-glass-strong: oklch(0.31 0.09 338 / 76%);
   --hero-field: oklch(0.23 0.062 334 / 70%);
-  --hero-sheen: linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary) 72%, transparent), transparent);
+  --hero-sheen: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--primary) 72%, transparent),
+    transparent
+  );
 }
 
 @layer base {
@@ -155,8 +165,16 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     background-image:
-      radial-gradient(circle at top left, color-mix(in oklab, var(--primary) 22%, transparent), transparent 34rem),
-      radial-gradient(circle at bottom right, color-mix(in oklab, var(--chart-4) 16%, transparent), transparent 30rem);
+      radial-gradient(
+        circle at top left,
+        color-mix(in oklab, var(--primary) 22%, transparent),
+        transparent 34rem
+      ),
+      radial-gradient(
+        circle at bottom right,
+        color-mix(in oklab, var(--chart-4) 16%, transparent),
+        transparent 30rem
+      );
     background-attachment: fixed;
   }
 }

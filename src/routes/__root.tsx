@@ -76,14 +76,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Manual app version update control with private toggles." },
       { name: "author", content: "Hero" },
       { property: "og:title", content: "UpdateHero" },
-      { property: "og:description", content: "Manual app version update control with private toggles." },
+      {
+        property: "og:description",
+        content: "Manual app version update control with private toggles.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "UpdateHero" },
-      { name: "twitter:description", content: "Manual app version update control with private toggles." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0e39d843-cc15-4c78-ac66-831ac63f2e91/id-preview-aa252726--7c219181-1c6a-4ada-9327-e73c4803df50.lovable.app-1778845037172.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0e39d843-cc15-4c78-ac66-831ac63f2e91/id-preview-aa252726--7c219181-1c6a-4ada-9327-e73c4803df50.lovable.app-1778845037172.png" },
+      {
+        name: "twitter:description",
+        content: "Manual app version update control with private toggles.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0e39d843-cc15-4c78-ac66-831ac63f2e91/id-preview-aa252726--7c219181-1c6a-4ada-9327-e73c4803df50.lovable.app-1778845037172.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0e39d843-cc15-4c78-ac66-831ac63f2e91/id-preview-aa252726--7c219181-1c6a-4ada-9327-e73c4803df50.lovable.app-1778845037172.png",
+      },
     ],
     links: [
       {

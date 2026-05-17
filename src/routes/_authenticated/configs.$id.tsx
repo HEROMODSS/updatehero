@@ -42,7 +42,11 @@ function EditConfig() {
   }, [id]);
 
   async function load() {
-    const { data, error } = await supabase.from("app_configs").select("*").eq("id", id).maybeSingle();
+    const { data, error } = await supabase
+      .from("app_configs")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
     if (error) {
       toast.error(error.message);
       return;
@@ -75,7 +79,10 @@ function EditConfig() {
 
   async function save() {
     if (!config) return;
-    const points = pointsText.split("\n").map((point) => point.trim()).filter(Boolean);
+    const points = pointsText
+      .split("\n")
+      .map((point) => point.trim())
+      .filter(Boolean);
     setSaving(true);
     const { error } = await supabase
       .from("app_configs")
@@ -112,7 +119,10 @@ function EditConfig() {
     <div className="mx-auto max-w-3xl space-y-6 animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
       <Toaster />
       <div>
-        <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+        >
           <ArrowLeft className="size-4" /> Back
         </Link>
         <div className="mt-4 overflow-hidden rounded-2xl border border-primary/20 bg-hero-glass p-6 shadow-hero backdrop-blur-xl">
@@ -133,34 +143,61 @@ function EditConfig() {
         <div className="flex items-center justify-between gap-4 rounded-xl border border-primary/10 bg-hero-glass-strong p-4">
           <div>
             <Label className="text-base">Update Toggle</Label>
-            <p className="mt-1 text-xs text-muted-foreground">When disabled, this version stays off.</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              When disabled, this version stays off.
+            </p>
           </div>
           <Switch checked={config.enabled} onCheckedChange={(value) => set("enabled", value)} />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="App Name">
-            <Input value={config.app_name} onChange={(event) => set("app_name", event.target.value)} className="h-11 bg-hero-field/70" />
+            <Input
+              value={config.app_name}
+              onChange={(event) => set("app_name", event.target.value)}
+              className="h-11 bg-hero-field/70"
+            />
           </Field>
           <Field label="Version Number">
-            <Input value={config.version} onChange={(event) => set("version", event.target.value)} className="h-11 bg-hero-field/70" />
+            <Input
+              value={config.version}
+              onChange={(event) => set("version", event.target.value)}
+              className="h-11 bg-hero-field/70"
+            />
           </Field>
         </div>
 
         <Field label="Title">
-          <Input value={config.title} onChange={(event) => set("title", event.target.value)} className="h-11 bg-hero-field/70" />
+          <Input
+            value={config.title}
+            onChange={(event) => set("title", event.target.value)}
+            className="h-11 bg-hero-field/70"
+          />
         </Field>
 
         <Field label="Change Description">
-          <Textarea rows={5} value={pointsText} onChange={(event) => setPointsText(event.target.value)} className="bg-hero-field/70" />
+          <Textarea
+            rows={5}
+            value={pointsText}
+            onChange={(event) => setPointsText(event.target.value)}
+            className="bg-hero-field/70"
+          />
         </Field>
 
         <Field label="Update Link">
-          <Input value={config.update_link} onChange={(event) => set("update_link", event.target.value)} className="h-11 bg-hero-field/70" />
+          <Input
+            value={config.update_link}
+            onChange={(event) => set("update_link", event.target.value)}
+            className="h-11 bg-hero-field/70"
+          />
         </Field>
 
         <Field label="Update Button Text">
-          <Input value={config.update_text} onChange={(event) => set("update_text", event.target.value)} className="h-11 bg-hero-field/70" />
+          <Input
+            value={config.update_text}
+            onChange={(event) => set("update_text", event.target.value)}
+            className="h-11 bg-hero-field/70"
+          />
         </Field>
 
         <Button onClick={save} disabled={saving} className="h-12 w-full rounded-xl shadow-hero-sm">

@@ -44,7 +44,12 @@ function AuthLayout() {
           </Link>
           <div className="flex items-center gap-3 text-sm">
             <span className="text-muted-foreground hidden sm:block">{email}</span>
-            <Button variant="outline" size="sm" onClick={logout} className="rounded-xl bg-hero-glass-strong">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={logout}
+              className="rounded-xl bg-hero-glass-strong"
+            >
               Sign out
             </Button>
           </div>

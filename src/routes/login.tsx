@@ -97,7 +97,11 @@ function LoginPage() {
                 className="h-12 bg-hero-field/70"
               />
             </div>
-            <Button type="submit" className="h-12 w-full rounded-xl shadow-hero-sm" disabled={loading}>
+            <Button
+              type="submit"
+              className="h-12 w-full rounded-xl shadow-hero-sm"
+              disabled={loading}
+            >
               {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </Button>
           </form>
