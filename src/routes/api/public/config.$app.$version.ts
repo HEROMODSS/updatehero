@@ -47,7 +47,8 @@ export const Route = createFileRoute("/api/public/config/$app/$version")({
           });
         }
 
-        const points = Array.isArray(row.points) && row.points.length > 0 ? row.points : DEFAULT_POINTS;
+        const points =
+          Array.isArray(row.points) && row.points.length > 0 ? row.points : DEFAULT_POINTS;
 
         return new Response(
           JSON.stringify(

@@ -205,14 +205,19 @@ function Dashboard() {
             <AndroidIcon className="size-9" />
             <div className="text-xs">
               <p className="font-semibold">{rows.length} versions</p>
-              <p className="text-muted-foreground">{rows.filter((row) => row.enabled).length} live</p>
+              <p className="text-muted-foreground">
+                {rows.filter((row) => row.enabled).length} live
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       <Card className="border-primary/20 bg-hero-glass p-4 shadow-hero backdrop-blur-xl sm:p-5">
-        <form onSubmit={createConfig} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+        <form
+          onSubmit={createConfig}
+          className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+        >
           <div className="space-y-2">
             <Label htmlFor="app">App Name</Label>
             <Input
@@ -366,7 +371,11 @@ function VersionRow({
       </div>
 
       <div className="flex items-center gap-2">
-        <Switch checked={row.enabled} onCheckedChange={onToggle} aria-label={`Toggle ${row.version}`} />
+        <Switch
+          checked={row.enabled}
+          onCheckedChange={onToggle}
+          aria-label={`Toggle ${row.version}`}
+        />
         <Badge
           variant="secondary"
           className={
@@ -383,7 +392,13 @@ function VersionRow({
             <Edit3 className="size-4" />
           </Button>
         </Link>
-        <Button variant="ghost" size="icon" onClick={onDelete} className="size-8 rounded-xl" title="Delete">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onDelete}
+          className="size-8 rounded-xl"
+          title="Delete"
+        >
           <Trash2 className="size-4" />
         </Button>
       </div>
