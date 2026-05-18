@@ -48,7 +48,11 @@ function EditConfig() {
   }, [id]);
 
   async function load() {
-    const { data, error } = await supabase.from("app_configs").select("*").eq("id", id).maybeSingle();
+    const { data, error } = await supabase
+      .from("app_configs")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
     if (error) {
       toast.error(error.message);
       return;
@@ -135,10 +139,18 @@ function EditConfig() {
     <div className="mx-auto max-w-2xl space-y-5 animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
       <Toaster />
       <div className="flex items-center justify-between gap-3">
-        <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+        >
           <ArrowLeft className="size-4" /> Back
         </Link>
-        <Button variant="outline" size="sm" onClick={copyLink} className="rounded-xl bg-hero-glass-strong">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={copyLink}
+          className="rounded-xl bg-hero-glass-strong"
+        >
           <Copy className="size-4" /> Copy link
         </Button>
       </div>
@@ -149,7 +161,9 @@ function EditConfig() {
           <h1 className="mt-3 truncate text-2xl font-semibold tracking-tight">
             {config.app_name} / {config.version}
           </h1>
-          <p className="mt-1 text-xs text-muted-foreground">Credits are kept hidden for the dialog.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Credits are kept hidden for the dialog.
+          </p>
         </div>
 
         <div className="space-y-4 p-5">
@@ -201,7 +215,11 @@ function EditConfig() {
             </Field>
           </div>
 
-          <Button onClick={save} disabled={saving} className="h-12 w-full rounded-xl shadow-hero-sm">
+          <Button
+            onClick={save}
+            disabled={saving}
+            className="h-12 w-full rounded-xl shadow-hero-sm"
+          >
             <Save className="size-4" />
             {saving ? "Saving…" : "Save changes"}
           </Button>
