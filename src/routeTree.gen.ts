@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConfigsIdRouteImport } from './routes/_authenticated/configs.$id'
+import { Route as AuthenticatedConfigsRouteImport } from './routes/_authenticated/configs.'
 import { Route as ApiPublicConfigAppVersionRouteImport } from './routes/api/public/config.$app.$version'
 
 const LoginRoute = LoginRouteImport.update({
@@ -40,6 +41,11 @@ const AuthenticatedConfigsIdRoute = AuthenticatedConfigsIdRouteImport.update({
   path: '/configs/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedConfigsRoute = AuthenticatedConfigsRouteImport.update({
+  id: '/configs/',
+  path: '/configs/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const ApiPublicConfigAppVersionRoute =
   ApiPublicConfigAppVersionRouteImport.update({
     id: '/api/public/config/$app/$version',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/configs/': typeof AuthenticatedConfigsRoute
   '/configs/$id': typeof AuthenticatedConfigsIdRoute
   '/api/public/config/$app/$version': typeof ApiPublicConfigAppVersionRoute
 }
@@ -58,6 +65,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/configs': typeof AuthenticatedConfigsRoute
   '/configs/$id': typeof AuthenticatedConfigsIdRoute
   '/api/public/config/$app/$version': typeof ApiPublicConfigAppVersionRoute
 }
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/configs/': typeof AuthenticatedConfigsRoute
   '/_authenticated/configs/$id': typeof AuthenticatedConfigsIdRoute
   '/api/public/config/$app/$version': typeof ApiPublicConfigAppVersionRoute
 }
@@ -76,6 +85,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/configs/'
     | '/configs/$id'
     | '/api/public/config/$app/$version'
   fileRoutesByTo: FileRoutesByTo
@@ -83,6 +93,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/configs'
     | '/configs/$id'
     | '/api/public/config/$app/$version'
   id:
@@ -91,6 +102,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/_authenticated/dashboard'
+    | '/_authenticated/configs/'
     | '/_authenticated/configs/$id'
     | '/api/public/config/$app/$version'
   fileRoutesById: FileRoutesById
@@ -139,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfigsIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/configs/': {
+      id: '/_authenticated/configs/'
+      path: '/configs'
+      fullPath: '/configs/'
+      preLoaderRoute: typeof AuthenticatedConfigsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/public/config/$app/$version': {
       id: '/api/public/config/$app/$version'
       path: '/api/public/config/$app/$version'
@@ -151,11 +170,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedConfigsRoute: typeof AuthenticatedConfigsRoute
   AuthenticatedConfigsIdRoute: typeof AuthenticatedConfigsIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedConfigsRoute: AuthenticatedConfigsRoute,
   AuthenticatedConfigsIdRoute: AuthenticatedConfigsIdRoute,
 }
 
