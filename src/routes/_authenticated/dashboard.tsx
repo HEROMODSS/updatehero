@@ -24,6 +24,7 @@ const DEFAULT_POINTS = [
   "🔥 Faster performance and smoother UI",
   "🔒 Improved security and privacy handling",
 ];
+const PUBLIC_CONFIG_ORIGIN = "https://updatehero.lovable.app";
 
 type ConfigRow = {
   id: string;
@@ -42,7 +43,6 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function Dashboard() {
   const [rows, setRows] = useState<ConfigRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [origin, setOrigin] = useState("");
   const [newApp, setNewApp] = useState("");
   const [newVersion, setNewVersion] = useState("");
   const [query, setQuery] = useState("");
@@ -52,7 +52,6 @@ function Dashboard() {
   const versionInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    setOrigin(window.location.origin);
     void load();
   }, []);
 
@@ -174,9 +173,7 @@ function Dashboard() {
   }
 
   function liveUrl(row: ConfigRow) {
-    return `${origin}/api/public/config/${encodeURIComponent(row.app_name)}/${encodeURIComponent(
-      row.version,
-    )}`;
+    return `${PUBLIC_CONFIG_ORIGIN}/api/public/config/${encodeURIComponent(row.app_name)}/${encodeURIComponent(row.version)}`;
   }
 
   async function copyLink(row: ConfigRow) {
