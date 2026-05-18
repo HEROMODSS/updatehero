@@ -10,7 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { ArrowLeft, Heart, Save, Sparkles } from "lucide-react";
+import { ArrowLeft, Copy, Save } from "lucide-react";
+
+const DEFAULT_POINTS = [
+  "🔥 Faster performance and smoother UI",
+  "🔒 Improved security and privacy handling",
+];
+const PUBLIC_CONFIG_ORIGIN = "https://updatehero.lovable.app";
 
 type Config = {
   id: string;
@@ -42,11 +48,7 @@ function EditConfig() {
   }, [id]);
 
   async function load() {
-    const { data, error } = await supabase
-      .from("app_configs")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
+    const { data, error } = await supabase.from("app_configs").select("*").eq("id", id).maybeSingle();
     if (error) {
       toast.error(error.message);
       return;
@@ -56,18 +58,18 @@ function EditConfig() {
       navigate({ to: "/dashboard" });
       return;
     }
-    const points = Array.isArray(data.points) ? (data.points as string[]) : [];
+    const points = Array.isArray(data.points) ? (data.points as string[]) : DEFAULT_POINTS;
     setConfig({
       id: data.id,
       app_name: data.app_name,
       version: data.version,
-      credit: data.credit,
+      credit: data.credit || "HERO",
       enabled: data.enabled,
-      title: data.title,
+      title: data.title || "🚀 New Update is Live!",
       points,
-      update_link: data.update_link,
-      cancel_text: data.cancel_text,
-      update_text: data.update_text,
+      update_link: data.update_link || "https://t.me/heromodss",
+      cancel_text: data.cancel_text || "NOT NOW",
+      update_text: data.update_text || "UPDATE NOW",
     });
     setPointsText(points.join("\n"));
   }
@@ -87,14 +89,12 @@ function EditConfig() {
     const { error } = await supabase
       .from("app_configs")
       .update({
-        app_name: config.app_name,
-        version: config.version,
-        credit: "Made with ❤️ by Hero",
+        credit: "HERO",
         enabled: config.enabled,
-        title: config.title,
-        points,
-        update_link: config.update_link,
-        cancel_text: "",
+        title: config.title || "🚀 New Update is Live!",
+        points: points.length ? points : DEFAULT_POINTS,
+        update_link: config.update_link || "https://t.me/heromodss",
+        cancel_text: config.cancel_text || "NOT NOW",
         update_text: config.update_text || "UPDATE NOW",
       })
       .eq("id", config.id);
@@ -104,7 +104,23 @@ function EditConfig() {
       return;
     }
     toast.success("Saved");
-    setConfig({ ...config, credit: "Made with ❤️ by Hero", points, cancel_text: "" });
+    setConfig({
+      ...config,
+      credit: "HERO",
+      points: points.length ? points : DEFAULT_POINTS,
+      cancel_text: config.cancel_text || "NOT NOW",
+      update_text: config.update_text || "UPDATE NOW",
+    });
+  }
+
+  async function copyLink() {
+    if (!config) return;
+    await navigator.clipboard.writeText(
+      `${PUBLIC_CONFIG_ORIGIN}/api/public/config/${encodeURIComponent(config.app_name)}/${encodeURIComponent(
+        config.version,
+      )}`,
+    );
+    toast.success("Config link copied");
   }
 
   if (!config) {
@@ -116,94 +132,80 @@ function EditConfig() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
+    <div className="mx-auto max-w-2xl space-y-5 animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
       <Toaster />
-      <div>
-        <Link
-          to="/dashboard"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-        >
+      <div className="flex items-center justify-between gap-3">
+        <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
           <ArrowLeft className="size-4" /> Back
         </Link>
-        <div className="mt-4 overflow-hidden rounded-2xl border border-primary/20 bg-hero-glass p-6 shadow-hero backdrop-blur-xl">
-          <div className="h-px [background:var(--hero-sheen)]" />
-          <Badge className="mt-5 bg-primary/15 text-primary hover:bg-primary/20">
-            <Sparkles className="mr-1 size-3" /> Version editor
-          </Badge>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-            {config.app_name} <span className="text-muted-foreground">/</span> {config.version}
-          </h1>
-          <p className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-            Made with <Heart className="size-4 text-primary" /> by Hero
-          </p>
-        </div>
+        <Button variant="outline" size="sm" onClick={copyLink} className="rounded-xl bg-hero-glass-strong">
+          <Copy className="size-4" /> Copy link
+        </Button>
       </div>
 
-      <Card className="space-y-5 border-primary/20 bg-hero-glass p-5 shadow-hero backdrop-blur-xl sm:p-6">
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-primary/10 bg-hero-glass-strong p-4">
-          <div>
-            <Label className="text-base">Update Toggle</Label>
-            <p className="mt-1 text-xs text-muted-foreground">
-              When disabled, this version stays off.
-            </p>
+      <Card className="overflow-hidden border-primary/20 bg-hero-glass shadow-hero backdrop-blur-xl">
+        <div className="border-b border-primary/10 p-5">
+          <Badge className="bg-primary/15 text-primary hover:bg-primary/20">Version editor</Badge>
+          <h1 className="mt-3 truncate text-2xl font-semibold tracking-tight">
+            {config.app_name} / {config.version}
+          </h1>
+          <p className="mt-1 text-xs text-muted-foreground">Credits are kept hidden for the dialog.</p>
+        </div>
+
+        <div className="space-y-4 p-5">
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-primary/10 bg-hero-glass-strong p-3">
+            <Label className="text-sm">Update Toggle</Label>
+            <Switch checked={config.enabled} onCheckedChange={(value) => set("enabled", value)} />
           </div>
-          <Switch checked={config.enabled} onCheckedChange={(value) => set("enabled", value)} />
-        </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="App Name">
+          <Field label="Title">
             <Input
-              value={config.app_name}
-              onChange={(event) => set("app_name", event.target.value)}
+              value={config.title}
+              onChange={(event) => set("title", event.target.value)}
               className="h-11 bg-hero-field/70"
             />
           </Field>
-          <Field label="Version Number">
+
+          <Field label="Text in line">
+            <Textarea
+              rows={4}
+              value={pointsText}
+              onChange={(event) => setPointsText(event.target.value)}
+              className="bg-hero-field/70"
+              placeholder={DEFAULT_POINTS.join("\n")}
+            />
+          </Field>
+
+          <Field label="Update Link">
             <Input
-              value={config.version}
-              onChange={(event) => set("version", event.target.value)}
+              value={config.update_link}
+              onChange={(event) => set("update_link", event.target.value)}
               className="h-11 bg-hero-field/70"
             />
           </Field>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Cancel Button Text">
+              <Input
+                value={config.cancel_text}
+                onChange={(event) => set("cancel_text", event.target.value)}
+                className="h-11 bg-hero-field/70"
+              />
+            </Field>
+            <Field label="Update Button Text">
+              <Input
+                value={config.update_text}
+                onChange={(event) => set("update_text", event.target.value)}
+                className="h-11 bg-hero-field/70"
+              />
+            </Field>
+          </div>
+
+          <Button onClick={save} disabled={saving} className="h-12 w-full rounded-xl shadow-hero-sm">
+            <Save className="size-4" />
+            {saving ? "Saving…" : "Save changes"}
+          </Button>
         </div>
-
-        <Field label="Title">
-          <Input
-            value={config.title}
-            onChange={(event) => set("title", event.target.value)}
-            className="h-11 bg-hero-field/70"
-          />
-        </Field>
-
-        <Field label="Change Description">
-          <Textarea
-            rows={5}
-            value={pointsText}
-            onChange={(event) => setPointsText(event.target.value)}
-            className="bg-hero-field/70"
-          />
-        </Field>
-
-        <Field label="Update Link">
-          <Input
-            value={config.update_link}
-            onChange={(event) => set("update_link", event.target.value)}
-            className="h-11 bg-hero-field/70"
-          />
-        </Field>
-
-        <Field label="Update Button Text">
-          <Input
-            value={config.update_text}
-            onChange={(event) => set("update_text", event.target.value)}
-            className="h-11 bg-hero-field/70"
-          />
-        </Field>
-
-        <Button onClick={save} disabled={saving} className="h-12 w-full rounded-xl shadow-hero-sm">
-          <Save className="size-4" />
-          {saving ? "Saving…" : "Save changes"}
-        </Button>
       </Card>
     </div>
   );
