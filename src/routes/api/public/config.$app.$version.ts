@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+const DEFAULT_POINTS = [
+  "🔥 Faster performance and smoother UI",
+  "🔒 Improved security and privacy handling",
+];
+
 export const Route = createFileRoute("/api/public/config/$app/$version")({
   server: {
     handlers: {
@@ -42,16 +47,18 @@ export const Route = createFileRoute("/api/public/config/$app/$version")({
           });
         }
 
+        const points = Array.isArray(row.points) && row.points.length > 0 ? row.points : DEFAULT_POINTS;
+
         return new Response(
           JSON.stringify(
             {
-              credit: row.credit ?? "Hero",
+              credit: "HERO",
               enabled: !!row.enabled,
-              title: row.title ?? "",
-              points: Array.isArray(row.points) ? row.points : [],
-              update_link: row.update_link ?? "",
-              cancel_text: row.cancel_text ?? "NOT NOW",
-              update_text: row.update_text ?? "UPDATE NOW",
+              title: row.title || "🚀 New Update is Live!",
+              points,
+              update_link: row.update_link || "https://t.me/heromodss",
+              cancel_text: row.cancel_text || "NOT NOW",
+              update_text: row.update_text || "UPDATE NOW",
             },
             null,
             2,
