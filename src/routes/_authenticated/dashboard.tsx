@@ -7,10 +7,24 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { Check, ChevronRight, Edit3, ExternalLink, Plus, Sparkles, Trash2, X } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  Copy,
+  Edit3,
+  Plus,
+  Search,
+  Trash2,
+  XCircle,
+} from "lucide-react";
+
+const DEFAULT_POINTS = [
+  "🔥 Faster performance and smoother UI",
+  "🔒 Improved security and privacy handling",
+];
+const PUBLIC_CONFIG_ORIGIN = "https://updatehero.lovable.app";
 
 type ConfigRow = {
   id: string;
@@ -18,6 +32,7 @@ type ConfigRow = {
   version: string;
   enabled: boolean;
   title: string;
+  created_at: string;
   updated_at: string;
 };
 
@@ -28,16 +43,15 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function Dashboard() {
   const [rows, setRows] = useState<ConfigRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [origin, setOrigin] = useState("");
   const [newApp, setNewApp] = useState("");
   const [newVersion, setNewVersion] = useState("");
+  const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
-  const [openApps, setOpenApps] = useState<Record<string, boolean>>({});
+  const [showAllApps, setShowAllApps] = useState<Record<string, boolean>>({});
   const appInputRef = useRef<HTMLInputElement | null>(null);
   const versionInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    setOrigin(window.location.origin);
     void load();
   }, []);
 
@@ -45,30 +59,33 @@ function Dashboard() {
     setLoading(true);
     const { data, error } = await supabase
       .from("app_configs")
-      .select("id,app_name,version,enabled,title,updated_at")
-      .order("app_name", { ascending: true })
-      .order("version", { ascending: false });
+      .select("id,app_name,version,enabled,title,created_at,updated_at")
+      .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
-    const list = (data as ConfigRow[]) ?? [];
-    setRows(list);
-    setOpenApps((prev) => {
-      const next: Record<string, boolean> = { ...prev };
-      for (const row of list) {
-        if (!(row.app_name in next)) next[row.app_name] = true;
-      }
-      return next;
-    });
+    setRows(((data as ConfigRow[]) ?? []).sort(sortNewestFirst));
     setLoading(false);
   }
 
   const grouped = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const filtered = needle
+      ? rows.filter((row) =>
+          [row.app_name, row.version, row.title].some((value) =>
+            value.toLowerCase().includes(needle),
+          ),
+        )
+      : rows;
+
     const map = new Map<string, ConfigRow[]>();
-    for (const row of rows) {
+    for (const row of filtered) {
       if (!map.has(row.app_name)) map.set(row.app_name, []);
       map.get(row.app_name)!.push(row);
     }
-    return Array.from(map.entries());
-  }, [rows]);
+
+    return Array.from(map.entries())
+      .map(([app, versions]) => [app, versions.sort(sortNewestFirst)] as const)
+      .sort((a, b) => newestTimestamp(b[1]) - newestTimestamp(a[1]));
+  }, [query, rows]);
 
   async function createConfig(e: React.FormEvent) {
     e.preventDefault();
@@ -96,10 +113,12 @@ function Dashboard() {
       app_name: app,
       version,
       owner_id,
-      credit: "Hero",
-      title: "New update is live",
-      points: ["Faster performance and smoother UI"],
+      credit: "HERO",
+      enabled: true,
+      title: "🚀 New Update is Live!",
+      points: DEFAULT_POINTS,
       update_link: "https://t.me/heromodss",
+      cancel_text: "NOT NOW",
       update_text: "UPDATE NOW",
     });
     setCreating(false);
@@ -113,7 +132,7 @@ function Dashboard() {
 
     setNewApp("");
     setNewVersion("");
-    setOpenApps((prev) => ({ ...prev, [app]: true }));
+    setShowAllApps((prev) => ({ ...prev, [app]: true }));
     toast.success(`Added ${app} / ${version}`);
     void load();
   }
@@ -132,27 +151,6 @@ function Dashboard() {
       setRows((current) =>
         current.map((item) => (item.id === row.id ? { ...item, enabled: previous } : item)),
       );
-    }
-  }
-
-  async function toggleAllForApp(app: string, value: boolean) {
-    const ids = rows.filter((row) => row.app_name === app).map((row) => row.id);
-    setRows((current) =>
-      current.map((item) => (item.app_name === app ? { ...item, enabled: value } : item)),
-    );
-    const { error } = await supabase.from("app_configs").update({ enabled: value }).in("id", ids);
-    if (error) {
-      toast.error(error.message);
-      void load();
-    }
-  }
-
-  async function updateTitle(row: ConfigRow, title: string) {
-    setRows((current) => current.map((item) => (item.id === row.id ? { ...item, title } : item)));
-    const { error } = await supabase.from("app_configs").update({ title }).eq("id", row.id);
-    if (error) {
-      toast.error(error.message);
-      void load();
     }
   }
 
@@ -175,53 +173,57 @@ function Dashboard() {
   }
 
   function liveUrl(row: ConfigRow) {
-    return `${origin}/api/public/config/${row.app_name}/${row.version}`;
+    return `${PUBLIC_CONFIG_ORIGIN}/api/public/config/${encodeURIComponent(row.app_name)}/${encodeURIComponent(row.version)}`;
+  }
+
+  async function copyLink(row: ConfigRow) {
+    await navigator.clipboard.writeText(liveUrl(row));
+    toast.success("Config link copied");
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in-50 duration-500">
+    <div className="mx-auto max-w-5xl space-y-5 animate-in fade-in-50 duration-500">
       <Toaster />
 
-      <section className="relative overflow-hidden rounded-2xl border border-primary/20 bg-hero-glass px-5 py-6 shadow-hero backdrop-blur-xl sm:px-8 sm:py-8">
+      <section className="relative overflow-hidden rounded-2xl border border-primary/20 bg-hero-glass px-5 py-5 shadow-hero backdrop-blur-xl sm:px-6">
         <div className="absolute inset-x-0 top-0 h-px [background:var(--hero-sheen)]" />
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <Badge className="bg-primary/15 text-primary hover:bg-primary/20">
-              <Sparkles className="mr-1 size-3" /> UpdateHero
-            </Badge>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-              Manual app update control
+            <Badge className="bg-primary/15 text-primary hover:bg-primary/20">UpdateHero</Badge>
+            <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-4xl">
+              Update system
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-              Add each app and version yourself. Only saved versions go live, so the old working
-              method stays clean and predictable.
+            <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+              Add exact app versions, copy the config link, then control each update with one
+              toggle.
             </p>
           </div>
-          <div className="rounded-xl border border-primary/15 bg-hero-glass-strong px-4 py-3 text-sm shadow-hero-sm backdrop-blur-xl">
-            <p className="text-muted-foreground">Made with ❤️ by</p>
-            <p className="text-lg font-semibold text-primary">Hero</p>
+          <div className="flex items-center gap-2 rounded-xl border border-primary/15 bg-hero-glass-strong px-3 py-2 shadow-hero-sm">
+            <AndroidIcon className="size-9" />
+            <div className="text-xs">
+              <p className="font-semibold">{rows.length} versions</p>
+              <p className="text-muted-foreground">
+                {rows.filter((row) => row.enabled).length} live
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      <Card className="overflow-hidden border-primary/20 bg-hero-glass shadow-hero backdrop-blur-xl">
-        <div className="border-b border-primary/10 px-5 py-4 sm:px-6">
-          <h2 className="text-lg font-semibold">Add app version</h2>
-          <p className="text-sm text-muted-foreground">Boxes: App Name | Version Number</p>
-        </div>
+      <Card className="border-primary/20 bg-hero-glass p-4 shadow-hero backdrop-blur-xl sm:p-5">
         <form
           onSubmit={createConfig}
-          className="grid gap-4 p-5 sm:grid-cols-[1fr_1fr_auto] sm:items-end sm:p-6"
+          className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
         >
           <div className="space-y-2">
             <Label htmlFor="app">App Name</Label>
             <Input
               ref={appInputRef}
               id="app"
-              placeholder="Enter App Name here"
+              placeholder="App Name"
               value={newApp}
               onChange={(e) => setNewApp(e.target.value)}
-              className="h-12 bg-hero-field/70"
+              className="h-11 bg-hero-field/70"
             />
           </div>
           <div className="space-y-2">
@@ -232,119 +234,101 @@ function Dashboard() {
               placeholder="Version Number"
               value={newVersion}
               onChange={(e) => setNewVersion(e.target.value)}
-              className="h-12 bg-hero-field/70"
+              className="h-11 bg-hero-field/70"
             />
           </div>
-          <Button type="submit" disabled={creating} className="h-12 rounded-xl shadow-hero-sm">
+          <Button type="submit" disabled={creating} className="h-11 rounded-xl shadow-hero-sm">
             <Plus className="size-4" />
             {creating ? "Adding…" : "Add"}
           </Button>
         </form>
       </Card>
 
+      <div className="relative">
+        <AndroidIcon className="absolute left-3 top-1/2 size-8 -translate-y-1/2" />
+        <Search className="absolute left-13 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search folder or version"
+          className="h-12 rounded-2xl bg-hero-glass pl-20 shadow-hero-sm backdrop-blur-xl"
+        />
+      </div>
+
       {loading ? (
         <Card className="border-primary/15 bg-hero-glass p-8 text-center text-sm text-muted-foreground shadow-hero backdrop-blur-xl">
           Loading apps…
         </Card>
       ) : grouped.length === 0 ? (
-        <Card className="border-primary/15 bg-hero-glass p-10 text-center shadow-hero backdrop-blur-xl">
+        <Card className="border-primary/15 bg-hero-glass p-8 text-center shadow-hero backdrop-blur-xl">
           <AndroidIcon className="mx-auto size-12" />
-          <h3 className="mt-4 text-lg font-semibold">No app folder yet</h3>
+          <h3 className="mt-4 text-base font-semibold">No app folder found</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add your first App Name and Version Number above.
+            Add App Name + Version Number to create the first folder.
           </p>
         </Card>
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-4">
           {grouped.map(([app, versions], index) => {
-            const isOpen = openApps[app] ?? true;
-            const enabledCount = versions.filter((version) => version.enabled).length;
-            const allOn = enabledCount === versions.length;
-            const hasLive = enabledCount > 0;
+            const activeCount = versions.filter((version) => version.enabled).length;
+            const showAll = showAllApps[app] ?? false;
+            const visibleVersions = showAll ? versions : versions.slice(0, 2);
 
             return (
               <Card
                 key={app}
-                className="overflow-hidden border-primary/15 bg-hero-glass shadow-hero backdrop-blur-xl animate-in fade-in-50 slide-in-from-bottom-4 duration-500"
-                style={{ animationDelay: `${Math.min(index * 60, 240)}ms` }}
+                className="overflow-hidden border-primary/15 bg-hero-glass shadow-hero backdrop-blur-xl animate-in fade-in-50 slide-in-from-bottom-3 duration-500"
+                style={{ animationDelay: `${Math.min(index * 45, 180)}ms` }}
               >
-                <Collapsible
-                  open={isOpen}
-                  onOpenChange={(open) => setOpenApps((prev) => ({ ...prev, [app]: open }))}
-                >
-                  <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                    <CollapsibleTrigger className="group flex min-w-0 flex-1 items-center gap-3 text-left">
-                      <ChevronRight
-                        className={`size-5 text-muted-foreground transition-transform ${isOpen ? "rotate-90" : ""}`}
-                      />
-                      <AndroidIcon />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="truncate text-lg font-semibold">{app}</span>
-                          <Badge variant="secondary">
-                            {versions.length} version{versions.length === 1 ? "" : "s"}
-                          </Badge>
-                          <Badge
-                            className={
-                              hasLive
-                                ? "bg-primary/15 text-primary hover:bg-primary/20"
-                                : "bg-secondary text-secondary-foreground"
-                            }
-                          >
-                            {hasLive ? `${enabledCount} live` : "offline"}
-                          </Badge>
-                        </div>
-                        <p className="mt-1 text-xs text-muted-foreground">Android app folder</p>
-                      </div>
-                    </CollapsibleTrigger>
-                    <div className="flex items-center justify-between gap-3 sm:justify-end">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        {allOn ? "Enabled" : enabledCount === 0 ? "Disabled" : "Mixed"}
-                      </span>
-                      <Switch
-                        checked={allOn}
-                        onCheckedChange={(value) => toggleAllForApp(app, value)}
-                        aria-label={`Toggle ${app}`}
-                      />
+                <div className="flex items-center gap-3 border-b border-primary/10 px-4 py-3 sm:px-5">
+                  <AndroidIcon />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <h2 className="truncate text-base font-semibold sm:text-lg">{app}</h2>
+                      <Badge variant="secondary" className="shrink-0">
+                        {versions.length} total
+                      </Badge>
+                      <Badge className="shrink-0 bg-primary/15 text-primary hover:bg-primary/20">
+                        {activeCount} live
+                      </Badge>
                     </div>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => addAnotherVersion(app)}
+                    className="size-9 shrink-0 rounded-xl bg-hero-glass-strong"
+                    title="Add another version"
+                  >
+                    <Plus className="size-4" />
+                  </Button>
+                </div>
 
-                  <CollapsibleContent>
-                    <div className="border-t border-primary/10">
-                      <div className="hidden grid-cols-[minmax(90px,0.8fr)_minmax(160px,2fr)_auto_auto_auto_auto] items-center gap-3 px-6 py-3 text-xs font-semibold uppercase text-muted-foreground sm:grid">
-                        <span>Version</span>
-                        <span>Change Description</span>
-                        <span>Update Toggle</span>
-                        <span>Edit</span>
-                        <span>Delete</span>
-                        <span>Live</span>
-                      </div>
-                      <div className="divide-y divide-primary/10">
-                        {versions.map((row) => (
-                          <VersionRow
-                            key={row.id}
-                            row={row}
-                            liveUrl={liveUrl(row)}
-                            onToggle={(value) => toggleEnabled(row, value)}
-                            onUpdateTitle={(title) => updateTitle(row, title)}
-                            onDelete={() => remove(row)}
-                          />
-                        ))}
-                      </div>
-                      <div className="px-5 py-4 sm:px-6">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addAnotherVersion(app)}
-                          className="rounded-xl bg-hero-glass-strong"
-                        >
-                          <Plus className="size-4" />
-                          Add another version of this app
-                        </Button>
-                      </div>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                <div className="divide-y divide-primary/10">
+                  {visibleVersions.map((row) => (
+                    <VersionRow
+                      key={row.id}
+                      row={row}
+                      onCopy={() => copyLink(row)}
+                      onToggle={(value) => toggleEnabled(row, value)}
+                      onDelete={() => remove(row)}
+                    />
+                  ))}
+                </div>
+
+                {versions.length > 2 && (
+                  <div className="px-4 py-3 sm:px-5">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAllApps((prev) => ({ ...prev, [app]: !showAll }))}
+                      className="rounded-xl"
+                    >
+                      <ChevronDown className={`size-4 transition ${showAll ? "rotate-180" : ""}`} />
+                      {showAll ? "Show less" : `Show all ${versions.length} versions`}
+                    </Button>
+                  </div>
+                )}
               </Card>
             );
           })}
@@ -356,127 +340,65 @@ function Dashboard() {
 
 function VersionRow({
   row,
-  liveUrl,
+  onCopy,
   onToggle,
-  onUpdateTitle,
   onDelete,
 }: {
   row: ConfigRow;
-  liveUrl: string;
+  onCopy: () => void;
   onToggle: (value: boolean) => void;
-  onUpdateTitle: (title: string) => void;
   onDelete: () => void;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(row.title);
-
-  useEffect(() => {
-    if (!editing) setDraft(row.title);
-  }, [editing, row.title]);
-
-  function commit() {
-    const title = draft.trim();
-    if (title && title !== row.title) onUpdateTitle(title);
-    setEditing(false);
-  }
-
   return (
-    <div className="grid gap-3 px-5 py-4 sm:grid-cols-[minmax(90px,0.8fr)_minmax(160px,2fr)_auto_auto_auto_auto] sm:items-center sm:px-6">
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground sm:hidden">Version</span>
-        <code className="rounded-lg bg-hero-field px-2.5 py-1 text-xs font-semibold text-foreground">
+    <div className="grid gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5">
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="shrink-0 text-xs font-semibold text-muted-foreground">VERSION =</span>
+        <code className="truncate rounded-lg bg-hero-field px-2.5 py-1 text-xs font-semibold text-foreground">
           {row.version}
         </code>
-      </div>
-
-      <div className="min-w-0">
-        {editing ? (
-          <div className="flex items-center gap-2">
-            <Input
-              autoFocus
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") commit();
-                if (event.key === "Escape") {
-                  setDraft(row.title);
-                  setEditing(false);
-                }
-              }}
-              className="h-9 bg-hero-field/80"
-            />
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-9"
-              onClick={commit}
-              title="Save text"
-            >
-              <Check className="size-4 text-primary" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-9"
-              onClick={() => {
-                setDraft(row.title);
-                setEditing(false);
-              }}
-              title="Cancel"
-            >
-              <X className="size-4" />
-            </Button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setEditing(true)}
-            className="min-w-0 truncate text-left text-sm hover:text-primary"
-            title="Click to edit description"
-          >
-            {row.title}
-          </button>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onCopy}
+          className="size-8 shrink-0 rounded-xl"
+          title="Copy config link"
+        >
+          <Copy className="size-4" />
+        </Button>
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground sm:hidden">Update Toggle</span>
         <Switch
           checked={row.enabled}
           onCheckedChange={onToggle}
           aria-label={`Toggle ${row.version}`}
         />
-      </div>
-
-      <Link to="/configs/$id" params={{ id: row.id }} className="w-fit">
-        <Button variant="ghost" size="sm" className="rounded-xl" title="Edit">
-          <Edit3 className="size-4" />
-          <span className="sm:hidden">Edit</span>
-        </Button>
-      </Link>
-
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onDelete}
-        className="w-fit rounded-xl"
-        title="Delete"
-      >
-        <Trash2 className="size-4" />
-        <span className="sm:hidden">Delete</span>
-      </Button>
-
-      <a href={liveUrl} target="_blank" rel="noreferrer" className="w-fit">
         <Badge
+          variant="secondary"
           className={
             row.enabled
               ? "bg-primary/15 text-primary hover:bg-primary/20"
               : "bg-secondary text-secondary-foreground"
           }
+          title={row.enabled ? "Live" : "Disabled"}
         >
-          {row.enabled ? "live" : "disabled"}
-          <ExternalLink className="ml-1 size-3" />
+          {row.enabled ? <CheckCircle2 className="size-3.5" /> : <XCircle className="size-3.5" />}
         </Badge>
-      </a>
+        <Link to="/configs/$id" params={{ id: row.id }}>
+          <Button variant="ghost" size="icon" className="size-8 rounded-xl" title="Edit">
+            <Edit3 className="size-4" />
+          </Button>
+        </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onDelete}
+          className="size-8 rounded-xl"
+          title="Delete"
+        >
+          <Trash2 className="size-4" />
+        </Button>
+      </div>
     </div>
   );
 }
@@ -491,4 +413,12 @@ function AndroidIcon({ className = "" }: { className?: string }) {
       </svg>
     </span>
   );
+}
+
+function sortNewestFirst(a: ConfigRow, b: ConfigRow) {
+  return Date.parse(b.created_at || b.updated_at) - Date.parse(a.created_at || a.updated_at);
+}
+
+function newestTimestamp(rows: ConfigRow[]) {
+  return Math.max(...rows.map((row) => Date.parse(row.created_at || row.updated_at)));
 }
