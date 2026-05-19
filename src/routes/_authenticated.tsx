@@ -2,7 +2,9 @@ import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { ShieldCheck, Settings, Sparkles } from "lucide-react";
+
+const ADMIN_EMAIL = "offial.heromods@gmail.com";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
@@ -32,6 +34,8 @@ function AuthLayout() {
     navigate({ to: "/login" });
   }
 
+  const isAdmin = email?.toLowerCase() === ADMIN_EMAIL;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-20 border-b border-primary/10 bg-hero-glass/80 backdrop-blur-xl">
@@ -42,8 +46,22 @@ function AuthLayout() {
             </span>
             UpdateHero
           </Link>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-muted-foreground hidden sm:block">{email}</span>
+          <div className="flex items-center gap-2 text-sm">
+            <Link to="/settings">
+              <Button variant="ghost" size="sm" className="rounded-xl" title="Default settings">
+                <Settings className="size-4" />
+                <span className="hidden sm:inline">Settings</span>
+              </Button>
+            </Link>
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="ghost" size="sm" className="rounded-xl" title="Admin panel">
+                  <ShieldCheck className="size-4" />
+                  <span className="hidden sm:inline">Admin</span>
+                </Button>
+              </Link>
+            )}
+            <span className="text-muted-foreground hidden md:block">{email}</span>
             <Button
               variant="outline"
               size="sm"
@@ -61,3 +79,4 @@ function AuthLayout() {
     </div>
   );
 }
+

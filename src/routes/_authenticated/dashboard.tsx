@@ -109,18 +109,33 @@ function Dashboard() {
       return;
     }
 
-    const { error } = await supabase.from("app_configs").insert({
-      app_name: app,
-      version,
-      owner_id,
-      credit: "HERO",
-      enabled: true,
-      title: "🚀 New Update is Live!",
-      points: DEFAULT_POINTS,
-      update_link: "https://t.me/heromodss",
-      cancel_text: "NOT NOW",
-      update_text: "UPDATE NOW",
-    });
+    // Pull this user's saved defaults so every new version inherits them.
+    const { data: defaults } = await supabase
+      .from("user_defaults")
+      .select("title,points,update_link,cancel_text,update_text")
+      .eq("owner_id", owner_id)
+      .maybeSingle();
+
+    const points = Array.isArray(defaults?.points)
+      ? (defaults!.points as string[])
+      : DEFAULT_POINTS;
+
+    const { data: inserted, error } = await supabase
+      .from("app_configs")
+      .insert({
+        app_name: app,
+        version,
+        owner_id,
+        credit: "HERO",
+        enabled: true,
+        title: defaults?.title || "🚀 New Update is Live!",
+        points,
+        update_link: defaults?.update_link || "https://t.me/heromodss",
+        cancel_text: defaults?.cancel_text || "NOT NOW",
+        update_text: defaults?.update_text || "UPDATE NOW",
+      })
+      .select("id,app_name,version,enabled,title,created_at,updated_at")
+      .single();
     setCreating(false);
 
     if (error) {
@@ -130,11 +145,13 @@ function Dashboard() {
       return;
     }
 
+    if (inserted) {
+      setRows((current) => [inserted as ConfigRow, ...current].sort(sortNewestFirst));
+    }
     setNewApp("");
     setNewVersion("");
     setShowAllApps((prev) => ({ ...prev, [app]: true }));
     toast.success(`Added ${app} / ${version}`);
-    void load();
   }
 
   async function toggleEnabled(row: ConfigRow, value: boolean) {

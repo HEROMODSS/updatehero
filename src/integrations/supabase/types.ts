@@ -62,6 +62,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_defaults: {
+        Row: {
+          cancel_text: string
+          created_at: string
+          owner_id: string
+          points: Json
+          title: string
+          update_link: string
+          update_text: string
+          updated_at: string
+        }
+        Insert: {
+          cancel_text?: string
+          created_at?: string
+          owner_id: string
+          points?: Json
+          title?: string
+          update_link?: string
+          update_text?: string
+          updated_at?: string
+        }
+        Update: {
+          cancel_text?: string
+          created_at?: string
+          owner_id?: string
+          points?: Json
+          title?: string
+          update_link?: string
+          update_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

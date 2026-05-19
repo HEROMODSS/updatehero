@@ -35,10 +35,13 @@ function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+          options: { emailRedirectTo: `${window.location.origin}/settings` },
         });
         if (error) throw error;
-        toast.success("Check your inbox to confirm your email.");
+        toast.success("Account created. Set your default dialog settings next.");
+        // Try direct sign-in (works if email confirmation is disabled)
+        const { data: signed } = await supabase.auth.signInWithPassword({ email, password });
+        if (signed.session) navigate({ to: "/settings" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -106,13 +109,20 @@ function LoginPage() {
             </Button>
           </form>
 
-          <button
-            type="button"
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="mt-5 w-full text-sm text-muted-foreground hover:text-primary"
-          >
-            {mode === "signin" ? "No account? Create one" : "Already have an account? Sign in"}
-          </button>
+          <div className="mt-5 flex flex-col items-center gap-2 text-sm">
+            <button
+              type="button"
+              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              className="text-muted-foreground hover:text-primary"
+            >
+              {mode === "signin" ? "No account? Create one" : "Already have an account? Sign in"}
+            </button>
+            {mode === "signin" && (
+              <Link to="/forgot-password" className="text-muted-foreground hover:text-primary">
+                Forgot password?
+              </Link>
+            )}
+          </div>
 
           <p className="mt-6 flex items-center justify-center gap-1 text-xs text-muted-foreground">
             Made with <Heart className="size-3 text-primary" /> by Hero
