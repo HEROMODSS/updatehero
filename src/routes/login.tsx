@@ -35,10 +35,13 @@ function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+          options: { emailRedirectTo: `${window.location.origin}/settings` },
         });
         if (error) throw error;
-        toast.success("Check your inbox to confirm your email.");
+        toast.success("Account created. Set your default dialog settings next.");
+        // Try direct sign-in (works if email confirmation is disabled)
+        const { data: signed } = await supabase.auth.signInWithPassword({ email, password });
+        if (signed.session) navigate({ to: "/settings" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
