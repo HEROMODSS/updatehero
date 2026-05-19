@@ -109,13 +109,20 @@ function LoginPage() {
             </Button>
           </form>
 
-          <button
-            type="button"
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="mt-5 w-full text-sm text-muted-foreground hover:text-primary"
-          >
-            {mode === "signin" ? "No account? Create one" : "Already have an account? Sign in"}
-          </button>
+          <div className="mt-5 flex flex-col items-center gap-2 text-sm">
+            <button
+              type="button"
+              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              className="text-muted-foreground hover:text-primary"
+            >
+              {mode === "signin" ? "No account? Create one" : "Already have an account? Sign in"}
+            </button>
+            {mode === "signin" && (
+              <Link to="/forgot-password" className="text-muted-foreground hover:text-primary">
+                Forgot password?
+              </Link>
+            )}
+          </div>
 
           <p className="mt-6 flex items-center justify-center gap-1 text-xs text-muted-foreground">
             Made with <Heart className="size-3 text-primary" /> by Hero
