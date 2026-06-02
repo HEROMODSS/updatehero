@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { listAllUsers, setUserBlocked } from "@/lib/admin.functions";
+import { listAllUsers, setUserBlocked, isAdminEmail } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -11,8 +11,6 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { ArrowLeft, Search, ShieldCheck, Users } from "lucide-react";
-
-const ADMIN_EMAIL = "offial.heromods@gmail.com";
 
 type AdminUser = {
   id: string;
@@ -37,7 +35,7 @@ function AdminPage() {
   useEffect(() => {
     void (async () => {
       const { data } = await supabase.auth.getUser();
-      const isAdmin = data.user?.email?.toLowerCase() === ADMIN_EMAIL;
+      const isAdmin = isAdminEmail(data.user?.email);
       setAllowed(!!isAdmin);
       if (!isAdmin) {
         setLoading(false);

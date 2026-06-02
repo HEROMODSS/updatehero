@@ -21,9 +21,11 @@ export type Database = {
           created_at: string
           credit: string
           enabled: boolean
+          enabled_key: string
           id: string
           owner_id: string
           points: Json
+          raw_json: Json | null
           title: string
           update_link: string
           update_text: string
@@ -36,9 +38,11 @@ export type Database = {
           created_at?: string
           credit?: string
           enabled?: boolean
+          enabled_key?: string
           id?: string
           owner_id: string
           points?: Json
+          raw_json?: Json | null
           title?: string
           update_link?: string
           update_text?: string
@@ -51,9 +55,11 @@ export type Database = {
           created_at?: string
           credit?: string
           enabled?: boolean
+          enabled_key?: string
           id?: string
           owner_id?: string
           points?: Json
+          raw_json?: Json | null
           title?: string
           update_link?: string
           update_text?: string
@@ -66,32 +72,41 @@ export type Database = {
         Row: {
           cancel_text: string
           created_at: string
+          enabled_key: string
           owner_id: string
           points: Json
+          raw_json: Json | null
           title: string
           update_link: string
           update_text: string
           updated_at: string
+          username: string | null
         }
         Insert: {
           cancel_text?: string
           created_at?: string
+          enabled_key?: string
           owner_id: string
           points?: Json
+          raw_json?: Json | null
           title?: string
           update_link?: string
           update_text?: string
           updated_at?: string
+          username?: string | null
         }
         Update: {
           cancel_text?: string
           created_at?: string
+          enabled_key?: string
           owner_id?: string
           points?: Json
+          raw_json?: Json | null
           title?: string
           update_link?: string
           update_text?: string
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
