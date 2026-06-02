@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Settings, Sparkles } from "lucide-react";
-
-const ADMIN_EMAIL = "offial.heromods@gmail.com";
+import { isAdminEmail } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
@@ -34,14 +33,14 @@ function AuthLayout() {
     navigate({ to: "/login" });
   }
 
-  const isAdmin = email?.toLowerCase() === ADMIN_EMAIL;
+  const isAdmin = isAdminEmail(email);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-20 border-b border-primary/10 bg-hero-glass/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/95">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-6">
           <Link to="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="inline-flex size-8 items-center justify-center rounded-xl bg-primary/15 text-primary shadow-hero-sm">
+            <span className="inline-flex size-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
               <Sparkles className="size-4" />
             </span>
             UpdateHero
@@ -61,13 +60,8 @@ function AuthLayout() {
                 </Button>
               </Link>
             )}
-            <span className="text-muted-foreground hidden md:block">{email}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={logout}
-              className="rounded-xl bg-hero-glass-strong"
-            >
+            <span className="hidden md:block text-muted-foreground">{email}</span>
+            <Button variant="outline" size="sm" onClick={logout} className="rounded-xl">
               Sign out
             </Button>
           </div>
@@ -79,4 +73,3 @@ function AuthLayout() {
     </div>
   );
 }
-

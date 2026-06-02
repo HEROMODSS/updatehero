@@ -3,7 +3,14 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const ADMIN_EMAIL = "offial.heromods@gmail.com";
+export const ADMIN_EMAILS = [
+  "official.heromods@gmail.com",
+  "officialakmalmalik@gmail.com",
+];
+
+export function isAdminEmail(email: string | null | undefined) {
+  return !!email && ADMIN_EMAILS.includes(email.toLowerCase());
+}
 
 function getAdminClient() {
   const url = process.env.SUPABASE_URL!;
@@ -14,8 +21,7 @@ function getAdminClient() {
 }
 
 function assertAdmin(claims: Record<string, unknown>) {
-  const email = (claims.email as string | undefined)?.toLowerCase();
-  if (email !== ADMIN_EMAIL) {
+  if (!isAdminEmail(claims.email as string | undefined)) {
     throw new Error("Forbidden: admin only");
   }
 }
@@ -33,7 +39,6 @@ export const listAllUsers = createServerFn({ method: "GET" })
       banned_until: string | null;
     }> = [];
     let page = 1;
-    // paginate up to 5 pages of 200 (1000 users max)
     while (page <= 5) {
       const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
       if (error) throw new Error(error.message);
@@ -49,7 +54,7 @@ export const listAllUsers = createServerFn({ method: "GET" })
       if (data.users.length < 200) break;
       page++;
     }
-    return { users: all, adminEmail: ADMIN_EMAIL };
+    return { users: all, adminEmails: ADMIN_EMAILS };
   });
 
 export const setUserBlocked = createServerFn({ method: "POST" })

@@ -4,20 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
- */
-
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -63,10 +49,11 @@
   --color-hero-glass-strong: var(--hero-glass-strong);
   --color-hero-field: var(--hero-field);
   --color-hero-sheen: var(--hero-sheen);
-  --shadow-hero: 0 24px 70px -32px color-mix(in oklab, var(--primary) 55%, transparent);
-  --shadow-hero-sm: 0 12px 34px -22px color-mix(in oklab, var(--primary) 70%, transparent);
+  --shadow-hero: 0 18px 50px -28px color-mix(in oklab, var(--primary) 45%, transparent);
+  --shadow-hero-sm: 0 10px 26px -18px color-mix(in oklab, var(--primary) 55%, transparent);
 }
 
+/* Light fallback (unused; app is dark AMOLED) */
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -103,55 +90,57 @@
   --sidebar-ring: oklch(0.704 0.04 256.788);
   --hero-glass: oklch(1 0 0 / 72%);
   --hero-glass-strong: oklch(1 0 0 / 86%);
-  --hero-field: oklch(0.985 0.012 350 / 72%);
+  --hero-field: oklch(0.97 0 0 / 80%);
   --hero-sheen: linear-gradient(
     90deg,
     transparent,
-    color-mix(in oklab, var(--primary) 70%, transparent),
+    color-mix(in oklab, var(--primary) 60%, transparent),
     transparent
   );
 }
 
+/* AMOLED dark theme — pure-black surfaces, electric cyan accent */
 .dark {
-  --background: oklch(0.15 0.045 334);
-  --foreground: oklch(0.985 0.012 350);
-  --card: oklch(0.22 0.058 334 / 88%);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.22 0.058 334);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.76 0.21 356);
-  --primary-foreground: oklch(0.16 0.045 344);
-  --secondary: oklch(0.28 0.058 334 / 72%);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.28 0.058 334 / 64%);
-  --muted-foreground: oklch(0.78 0.055 340);
-  --accent: oklch(0.33 0.083 340 / 78%);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 13%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.76 0.21 356);
-  --chart-1: oklch(0.488 0.243 264.376);
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.07 0.005 260);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.07 0.005 260);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.82 0.18 200);
+  --primary-foreground: oklch(0.08 0.02 220);
+  --secondary: oklch(0.13 0.01 260);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.12 0.005 260);
+  --muted-foreground: oklch(0.66 0.01 260);
+  --accent: oklch(0.18 0.04 220);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.7 0.19 22);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.82 0.18 200);
+  --chart-1: oklch(0.82 0.18 200);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar: oklch(0.05 0.005 260);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.82 0.18 200);
+  --sidebar-primary-foreground: oklch(0.08 0.02 220);
+  --sidebar-accent: oklch(0.13 0.01 260);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
-  --hero-glass: oklch(0.25 0.072 334 / 58%);
-  --hero-glass-strong: oklch(0.31 0.09 338 / 76%);
-  --hero-field: oklch(0.23 0.062 334 / 70%);
+  --sidebar-ring: oklch(0.82 0.18 200);
+  /* Solid AMOLED surfaces (no blur cost) */
+  --hero-glass: oklch(0.07 0.005 260);
+  --hero-glass-strong: oklch(0.1 0.008 260);
+  --hero-field: oklch(0.1 0.008 260);
   --hero-sheen: linear-gradient(
     90deg,
     transparent,
-    color-mix(in oklab, var(--primary) 72%, transparent),
+    color-mix(in oklab, var(--primary) 70%, transparent),
     transparent
   );
 }
@@ -164,17 +153,5 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    background-image:
-      radial-gradient(
-        circle at top left,
-        color-mix(in oklab, var(--primary) 22%, transparent),
-        transparent 34rem
-      ),
-      radial-gradient(
-        circle at bottom right,
-        color-mix(in oklab, var(--chart-4) 16%, transparent),
-        transparent 30rem
-      );
-    background-attachment: fixed;
   }
 }
