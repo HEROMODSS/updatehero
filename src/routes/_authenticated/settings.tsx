@@ -122,7 +122,7 @@ function SettingsPage() {
         update_link: state.update_link || INIT.update_link,
         cancel_text: state.cancel_text || INIT.cancel_text,
         update_text: state.update_text || INIT.update_text,
-        raw_json: rawParsed,
+        raw_json: rawParsed as never,
         enabled_key: state.enabled_key.trim() || "enabled",
       },
       { onConflict: "owner_id" },

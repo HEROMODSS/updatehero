@@ -124,7 +124,7 @@ function EditConfig() {
         update_link: config.update_link || "https://t.me/heromodss",
         cancel_text: config.cancel_text || "NOT NOW",
         update_text: config.update_text || "UPDATE NOW",
-        raw_json: rawParsed,
+        raw_json: rawParsed as never,
         enabled_key: (config.enabled_key || "enabled").trim() || "enabled",
       })
       .eq("id", config.id);

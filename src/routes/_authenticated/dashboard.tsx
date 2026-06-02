@@ -161,25 +161,22 @@ function Dashboard() {
       return;
     }
 
-    const usingCustom = !!defaults?.raw_json;
-    const insertPayload: Record<string, unknown> = {
-      app_name: prefixedApp,
-      version,
-      owner_id,
-      credit: "HERO",
-      enabled: true,
-      title: defaults?.title || "🚀 New Update is Live!",
-      points: defaults?.points?.length ? defaults.points : DEFAULT_POINTS,
-      update_link: defaults?.update_link || "https://t.me/heromodss",
-      cancel_text: defaults?.cancel_text || "NOT NOW",
-      update_text: defaults?.update_text || "UPDATE NOW",
-      enabled_key: defaults?.enabled_key || "enabled",
-    };
-    if (usingCustom) insertPayload.raw_json = defaults!.raw_json;
-
     const { data: inserted, error } = await supabase
       .from("app_configs")
-      .insert(insertPayload)
+      .insert({
+        app_name: prefixedApp,
+        version,
+        owner_id,
+        credit: "HERO",
+        enabled: true,
+        title: defaults?.title || "🚀 New Update is Live!",
+        points: defaults?.points?.length ? defaults.points : DEFAULT_POINTS,
+        update_link: defaults?.update_link || "https://t.me/heromodss",
+        cancel_text: defaults?.cancel_text || "NOT NOW",
+        update_text: defaults?.update_text || "UPDATE NOW",
+        enabled_key: defaults?.enabled_key || "enabled",
+        raw_json: (defaults?.raw_json ?? null) as never,
+      })
       .select("id,app_name,version,enabled,title,created_at,updated_at")
       .single();
     setCreating(false);
