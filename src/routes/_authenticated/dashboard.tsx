@@ -51,6 +51,12 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
+function stripUser(name: string, username: string | null | undefined) {
+  if (!username) return name;
+  const p = `${username}-`;
+  return name.toLowerCase().startsWith(p.toLowerCase()) ? name.slice(p.length) : name;
+}
+
 function Dashboard() {
   const [rows, setRows] = useState<ConfigRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +74,7 @@ function Dashboard() {
 
   async function loadAll() {
     setLoading(true);
-    const [{ data: userRes }] = await Promise.all([supabase.auth.getUser()]);
+    const { data: userRes } = await supabase.auth.getUser();
     const ownerId = userRes.user?.id;
     if (!ownerId) {
       setLoading(false);
@@ -116,22 +122,27 @@ function Dashboard() {
 
   const username = defaults?.username ?? "";
 
+  // Group by *display* (stripped) name so old un-prefixed rows merge with
+  // newly-prefixed ones.
   const grouped = useMemo(() => {
     const needle = query.trim().toLowerCase();
     const filtered = needle
       ? rows.filter((row) =>
-          [row.app_name, row.version, row.title].some((v) => v.toLowerCase().includes(needle)),
+          [stripUser(row.app_name, username), row.version, row.title].some((v) =>
+            v.toLowerCase().includes(needle),
+          ),
         )
       : rows;
     const map = new Map<string, ConfigRow[]>();
     for (const row of filtered) {
-      if (!map.has(row.app_name)) map.set(row.app_name, []);
-      map.get(row.app_name)!.push(row);
+      const key = stripUser(row.app_name, username);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(row);
     }
     return Array.from(map.entries())
       .map(([app, versions]) => [app, versions.sort(sortNewestFirst)] as const)
       .sort((a, b) => newestTimestamp(b[1]) - newestTimestamp(a[1]));
-  }, [query, rows]);
+  }, [query, rows, username]);
 
   async function createConfig(e: React.FormEvent) {
     e.preventDefault();
@@ -150,7 +161,8 @@ function Dashboard() {
       return;
     }
 
-    const prefixedApp = `${username}-${rawApp}`;
+    // Stored name always carries the username prefix for unique URLs.
+    const prefixedApp = `${username}-${stripUser(rawApp, username)}`;
 
     setCreating(true);
     const { data: userRes } = await supabase.auth.getUser();
@@ -185,7 +197,7 @@ function Dashboard() {
       toast.error(
         error.message.includes("app_configs_app_version_idx") ||
           error.message.toLowerCase().includes("duplicate")
-          ? `"${prefixedApp} / ${version}" already exists.`
+          ? `"${stripUser(prefixedApp, username)} / ${version}" already exists.`
           : error.message,
       );
       return;
@@ -196,8 +208,8 @@ function Dashboard() {
     }
     setNewApp("");
     setNewVersion("");
-    setShowAllApps((prev) => ({ ...prev, [prefixedApp]: true }));
-    toast.success(`Added ${prefixedApp} / ${version}`);
+    setShowAllApps((prev) => ({ ...prev, [stripUser(prefixedApp, username)]: true }));
+    toast.success(`Added ${stripUser(prefixedApp, username)} / ${version}`);
   }
 
   async function toggleEnabled(row: ConfigRow, value: boolean) {
@@ -214,17 +226,15 @@ function Dashboard() {
   }
 
   async function remove(row: ConfigRow) {
-    if (!confirm(`Delete ${row.app_name} / ${row.version}?`)) return;
+    if (!confirm(`Delete ${stripUser(row.app_name, username)} / ${row.version}?`)) return;
     const { error } = await supabase.from("app_configs").delete().eq("id", row.id);
     if (error) return toast.error(error.message);
     setRows((c) => c.filter((i) => i.id !== row.id));
     toast.success("Deleted");
   }
 
-  function addAnotherVersion(app: string) {
-    // strip the "username-" prefix so the input shows just the app part
-    const stripped = username && app.startsWith(`${username}-`) ? app.slice(username.length + 1) : app;
-    setNewApp(stripped);
+  function addAnotherVersion(displayApp: string) {
+    setNewApp(displayApp);
     setNewVersion("");
     window.scrollTo({ top: 0, behavior: "smooth" });
     window.setTimeout(() => versionInputRef.current?.focus(), 200);
@@ -239,44 +249,47 @@ function Dashboard() {
     toast.success("Config link copied");
   }
 
+  const totalLive = rows.filter((r) => r.enabled).length;
+
   return (
-    <div className="mx-auto max-w-5xl space-y-5 animate-in fade-in-50 duration-300">
+    <div className="mx-auto max-w-5xl space-y-6 animate-in fade-in-50 duration-300">
       <Toaster />
 
-      <section className="rounded-2xl border border-border bg-card px-5 py-5 sm:px-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Hero header */}
+      <section className="relative overflow-hidden rounded-3xl border border-border bg-card px-5 py-6 sm:px-8 sm:py-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full opacity-60 blur-3xl"
+          style={{ background: "radial-gradient(closest-side, color-mix(in oklab, var(--primary) 35%, transparent), transparent)" }}
+        />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <Badge className="bg-primary/15 text-primary hover:bg-primary/20">UpdateHero</Badge>
             <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-4xl">
-              Update system
+              Your update dashboard
             </h1>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              Add app versions, copy the config link, then toggle each update live or off.
+              Add apps, copy the config link, toggle each version live or off in one tap.
             </p>
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-hero-glass-strong px-3 py-2">
-            <AndroidIcon className="size-9" />
-            <div className="text-xs">
-              <p className="font-semibold">{rows.length} versions</p>
-              <p className="text-muted-foreground">
-                {rows.filter((r) => r.enabled).length} live
-              </p>
-            </div>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <Stat label="Versions" value={rows.length} />
+            <Stat label="Live" value={totalLive} accent />
           </div>
         </div>
       </section>
 
       {!loading && !username && (
         <Card className="border-primary/40 bg-card p-4 text-sm">
-          You need a <span className="text-primary font-medium">username</span> before adding apps.
-          It's prefixed to every app name so your links stay unique.{" "}
+          You need a <span className="text-primary font-medium">username</span> in{" "}
           <Link to="/settings" className="text-primary underline">
-            Set it now
-          </Link>
-          .
+            Settings
+          </Link>{" "}
+          before adding apps — it keeps your config links unique behind the scenes.
         </Card>
       )}
 
+      {/* Add form */}
       <Card className="border-border bg-card p-4 sm:p-5">
         <form
           onSubmit={createConfig}
@@ -284,18 +297,13 @@ function Dashboard() {
         >
           <div className="space-y-2">
             <Label htmlFor="app">App Name</Label>
-            <div className="flex h-11 items-stretch rounded-md border border-input bg-hero-field">
-              <span className="flex select-none items-center rounded-l-md border-r border-input bg-muted px-3 text-xs font-mono text-primary">
-                {username || "username"}-
-              </span>
-              <Input
-                id="app"
-                placeholder="AppName"
-                value={newApp}
-                onChange={(e) => setNewApp(e.target.value)}
-                className="h-full border-0 bg-transparent px-3 focus-visible:ring-0"
-              />
-            </div>
+            <Input
+              id="app"
+              placeholder="AppName"
+              value={newApp}
+              onChange={(e) => setNewApp(e.target.value)}
+              className="h-11 bg-hero-field"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="version">Version Number</Label>
@@ -308,11 +316,7 @@ function Dashboard() {
               className="h-11 bg-hero-field"
             />
           </div>
-          <Button
-            type="submit"
-            disabled={creating || !username}
-            className="h-11 rounded-xl"
-          >
+          <Button type="submit" disabled={creating || !username} className="h-11 rounded-xl">
             <Plus className="size-4" />
             {creating ? "Adding…" : "Add"}
           </Button>
@@ -324,7 +328,7 @@ function Dashboard() {
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search folder or version"
+          placeholder="Search app or version"
           className="h-12 rounded-2xl bg-card pl-10"
         />
       </div>
@@ -334,11 +338,11 @@ function Dashboard() {
           Loading apps…
         </Card>
       ) : grouped.length === 0 ? (
-        <Card className="border-border bg-card p-8 text-center">
+        <Card className="border-border bg-card p-10 text-center">
           <AndroidIcon className="mx-auto size-12" />
-          <h3 className="mt-4 text-base font-semibold">No app folder yet</h3>
+          <h3 className="mt-4 text-base font-semibold">No app yet</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add App Name + Version Number to create the first folder.
+            Add an App Name + Version Number to create the first one.
           </p>
         </Card>
       ) : (
@@ -349,7 +353,10 @@ function Dashboard() {
             const visibleVersions = showAll ? versions : versions.slice(0, 2);
 
             return (
-              <Card key={app} className="overflow-hidden border-border bg-card">
+              <Card
+                key={app}
+                className="overflow-hidden border-border bg-card transition hover:border-primary/30"
+              >
                 <div className="flex items-center gap-3 border-b border-border px-4 py-3 sm:px-5">
                   <AndroidIcon />
                   <div className="min-w-0 flex-1">
@@ -394,7 +401,9 @@ function Dashboard() {
                       onClick={() => setShowAllApps((p) => ({ ...p, [app]: !showAll }))}
                       className="rounded-xl"
                     >
-                      <ChevronDown className={`size-4 transition ${showAll ? "rotate-180" : ""}`} />
+                      <ChevronDown
+                        className={`size-4 transition ${showAll ? "rotate-180" : ""}`}
+                      />
                       {showAll ? "Show less" : `Show all ${versions.length} versions`}
                     </Button>
                   </div>
@@ -404,6 +413,25 @@ function Dashboard() {
           })}
         </div>
       )}
+
+      <p className="pt-2 text-center text-xs text-muted-foreground">
+        Made with <span className="text-primary">♥</span> by Hero
+      </p>
+    </div>
+  );
+}
+
+function Stat({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
+  return (
+    <div
+      className={`rounded-2xl border px-4 py-3 text-center ${
+        accent
+          ? "border-primary/40 bg-primary/10 text-primary"
+          : "border-border bg-hero-glass-strong"
+      }`}
+    >
+      <p className="text-xl font-semibold leading-none">{value}</p>
+      <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
     </div>
   );
 }
@@ -422,7 +450,9 @@ function VersionRow({
   return (
     <div className="grid gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5">
       <div className="flex min-w-0 items-center gap-2">
-        <span className="shrink-0 text-xs font-semibold text-muted-foreground">VERSION =</span>
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Version
+        </span>
         <code className="truncate rounded-lg bg-hero-field px-2.5 py-1 text-xs font-semibold">
           {row.version}
         </code>
@@ -448,7 +478,11 @@ function VersionRow({
           }
           title={row.enabled ? "Live" : "Disabled"}
         >
-          {row.enabled ? <CheckCircle2 className="size-3.5" /> : <XCircle className="size-3.5" />}
+          {row.enabled ? (
+            <CheckCircle2 className="size-3.5" />
+          ) : (
+            <XCircle className="size-3.5" />
+          )}
         </Badge>
         <Link to="/configs/$id" params={{ id: row.id }}>
           <Button variant="ghost" size="icon" className="size-8 rounded-xl" title="Edit">
