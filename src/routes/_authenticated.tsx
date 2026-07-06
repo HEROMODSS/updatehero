@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Settings, Sparkles } from "lucide-react";
 import { isAdminEmail } from "@/lib/admin.functions";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
@@ -51,6 +52,7 @@ function AuthLayout() {
             </span>
           </Link>
           <div className="flex items-center gap-1.5 text-sm">
+            <ThemeToggle />
             <Link to="/settings">
               <Button
                 variant="ghost"
