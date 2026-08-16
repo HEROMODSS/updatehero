@@ -131,7 +131,7 @@ const themeInitScript = `(function(){try{var s=localStorage.getItem('theme');var
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
