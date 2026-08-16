@@ -1,10 +1,10 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { ShieldCheck, Settings, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { isAdminEmail } from "@/lib/admin.functions";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AppMenu } from "@/components/app-menu";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
