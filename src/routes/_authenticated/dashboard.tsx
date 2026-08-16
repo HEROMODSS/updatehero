@@ -13,7 +13,8 @@ const DEFAULT_POINTS = [
   "🔥 Faster performance and smoother UI",
   "🔒 Improved security and privacy handling",
 ];
-const PUBLIC_CONFIG_ORIGIN = "https://updatehero.lovable.app";
+const PUBLIC_CONFIG_ORIGIN =
+  import.meta.env.VITE_PUBLIC_CONFIG_ORIGIN || "https://updatehero.lovable.app";
 
 type ConfigRow = {
   id: string;
